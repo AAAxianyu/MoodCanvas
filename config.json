@@ -1,0 +1,55 @@
+{
+  "project": {
+    "name": "三阶段多模型情感分析系统",
+    "version": "2.0.0",
+    "description": "集成Paraformer-zh ASR、中文文本情感分类、emotion2vec声学情感分析"
+  },
+  "paths": {
+    "input_dir": "input",
+    "output_dir": "outputs",
+    "temp_dir": "temp_outputs",
+    "models_cache": "./models_cache"
+  },
+  "audio_files": {
+    "default": "asr_example.wav",
+    "available": [
+      "asr_example.wav",
+      "111.wav",
+      "hive-0001.wav",
+      "test.wav"
+    ]
+  },
+  "models": {
+    "emotion2vec": {
+      "name": "iic/emotion2vec_plus_large",
+      "type": "funasr",
+      "local_path": "emotion2vec_plus_large",
+      "description": "音频情感识别模型"
+    },
+    "paraformer": {
+      "name": "paraformer-zh",
+      "type": "funasr",
+      "local_path": "paraformer-zh",
+      "description": "中文语音转文字模型"
+    },
+    "text_emotion": {
+      "name": "uer/roberta-base-finetuned-jd-binary-chinese",
+      "type": "transformers",
+      "description": "中文文本情感分类模型"
+    }
+  },
+  "settings": {
+    "use_local_models": true,
+    "download_to_project": true,
+    "cache_models": true,
+    "batch_size": 1,
+    "granularity": "utterance",
+    "extract_embedding": false
+  },
+  "output_format": {
+    "include_timestamp": true,
+    "include_raw_data": true,
+    "sort_by_confidence": true,
+    "max_emotions_display": 10
+  }
+}
