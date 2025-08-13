@@ -53,7 +53,23 @@
         "size": "adaptive",
         "watermark": true
       }
+    },
+    "t2i": {
+       "use_api": true,
+       "provider": "doubao",
+       "model_name": "doubao-seedream-3-0-t2i-250415",
+       "api": {
+          "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+          "api_key_env": "ARK_API_KEY"
+       },
+       "defaults": {
+            "guidance_scale": 7.5,
+            "size": "1024x1024",
+            "num_images": 1,
+            "watermark": true
+       }
     }
+
   },
   "secrets": {
     "doubao_api_key_env": "ARK_API_KEY"
@@ -73,4 +89,3 @@
     "max_emotions_display": 10
   }
 }
-

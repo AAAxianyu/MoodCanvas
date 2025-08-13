@@ -33,7 +33,6 @@ class MultiModelEmotionAnalyzer:
             paraformer_path = self.config_manager.get_model_path("paraformer")
             if self.config_manager.config["settings"]["use_local_models"]:
                 # 使用本地模型 - 转换为绝对路径
-                import os
                 paraformer_abs_path = os.path.abspath(paraformer_path)
                 print(f"🔄 尝试加载本地模型: {paraformer_abs_path}")
                 self.paraformer_model = AutoModel(model=paraformer_abs_path)
@@ -50,11 +49,12 @@ class MultiModelEmotionAnalyzer:
         # 阶段2: 中文文本情感分类
         try:
             if self.config_manager.config["settings"]["use_local_models"]:
-                # 使用本地中文情感分类模型
-                local_text_model_path = "distilbert-base-uncased-go-emotions-student"
-                print(f"🔄 尝试加载本地中文情感分类模型: {local_text_model_path}")
-                self.text_tokenizer = AutoTokenizer.from_pretrained(local_text_model_path)
-                self.text_model = AutoModelForSequenceClassification.from_pretrained(local_text_model_path)
+                # 使用本地中文情感分类模型 - 从配置文件读取路径
+                text_emotion_path = self.config_manager.get_model_path("text_emotion")
+                text_emotion_abs_path = os.path.abspath(text_emotion_path)
+                print(f"🔄 尝试加载本地中文情感分类模型: {text_emotion_abs_path}")
+                self.text_tokenizer = AutoTokenizer.from_pretrained(text_emotion_abs_path)
+                self.text_model = AutoModelForSequenceClassification.from_pretrained(text_emotion_abs_path)
             else:
                 # 使用在线中文情感分类模型
                 model_name = "uer/roberta-base-finetuned-jd-binary-chinese"
@@ -76,8 +76,18 @@ class MultiModelEmotionAnalyzer:
         try:
             emotion2vec_path = self.config_manager.get_model_path("emotion2vec")
             if self.config_manager.config["settings"]["use_local_models"]:
-                # 使用本地模型
-                self.emotion2vec_model = AutoModel(model=emotion2vec_path)
+                # 使用本地模型 - 转换为绝对路径
+                emotion2vec_abs_path = os.path.abspath(emotion2vec_path)
+                print(f"🔄 尝试加载本地emotion2vec模型: {emotion2vec_abs_path}")
+                print(f"🔍 检查目录内容:")
+                if os.path.exists(emotion2vec_abs_path):
+                    files = os.listdir(emotion2vec_abs_path)
+                    print(f"📁 目录文件: {files}")
+                else:
+                    print(f"❌ 目录不存在: {emotion2vec_abs_path}")
+                
+                # 尝试加载本地模型
+                self.emotion2vec_model = AutoModel(model=emotion2vec_abs_path)
                 print("✅ 阶段3: emotion2vec 本地模型加载成功")
             else:
                 # 使用在线模型
@@ -85,6 +95,7 @@ class MultiModelEmotionAnalyzer:
                 print("✅ 阶段3: emotion2vec 在线模型加载成功")
         except Exception as e:
             print(f"❌ 阶段3: emotion2vec 声学情感分析模型加载失败: {e}")
+            print(f"🔍 错误类型: {type(e).__name__}")
             self.emotion2vec_model = None
     
     def stage1_asr_transcription(self, audio_path):
@@ -158,56 +169,12 @@ class MultiModelEmotionAnalyzer:
                 extract_embedding=False
             )
             
-            # 解析 emotion2vec 输出 - 支持多种输出格式
-            emotions = []
+            # 直接返回emotion2vec的原始输出，不进行任何修改
+            print(f"🔍 emotion2vec 原始输出: {result}")
+            print(f"🔍 输出类型: {type(result)}")
             
-            if isinstance(result, list) and len(result) > 0:
-                # 如果是列表格式
-                for item in result:
-                    if isinstance(item, dict):
-                        if "emotion" in item:
-                            # 新格式
-                            for emotion_item in item["emotion"]:
-                                emotions.append({
-                                    "label": emotion_item.get("label", "unknown"),
-                                    "confidence": emotion_item.get("score", 0.0)
-                                })
-                        elif "scores" in item:
-                            # 旧格式 - 使用预定义的情感标签
-                            emotion_labels = ['生气/angry', '厌恶/disgusted', '恐惧/fearful', '开心/happy', 
-                                           '中立/neutral', '其他/other', '难过/sad', '吃惊/surprised', '<unk>']
-                            scores = item["scores"]
-                            for i, score in enumerate(scores):
-                                if i < len(emotion_labels):
-                                    emotions.append({
-                                        "label": emotion_labels[i],
-                                        "confidence": score
-                                    })
-            elif isinstance(result, dict):
-                # 如果是字典格式
-                if "emotion" in result:
-                    for emotion_item in result["emotion"]:
-                        emotions.append({
-                            "label": emotion_item.get("label", "unknown"),
-                            "confidence": emotion_item.get("score", 0.0)
-                        })
-                elif "scores" in result:
-                    emotion_labels = ['生气/angry', '厌恶/disgusted', '恐惧/fearful', '开心/happy', 
-                                   '中立/neutral', '其他/other', '难过/sad', '吃惊/surprised', '<unk>']
-                    scores = result["scores"]
-                    for i, score in enumerate(scores):
-                        if i < len(emotion_labels):
-                            emotions.append({
-                                "label": emotion_labels[i],
-                                "confidence": score
-                            })
-            
-            if emotions:
-                # 按置信度排序
-                emotions.sort(key=lambda x: x["confidence"], reverse=True)
-                return emotions, None
-            else:
-                return None, "无法解析 emotion2vec 输出格式"
+            # 直接返回原始结果，让用户看到emotion2vec的真实输出
+            return result, None
                 
         except Exception as e:
             return None, f"声学情感分析失败: {e}"
@@ -260,7 +227,7 @@ class MultiModelEmotionAnalyzer:
             print(f"✅ 声学情感分析成功: {audio_emotions}")
             results["stages"]["audio_emotion"] = {
                 "status": "success", 
-                "emotions": audio_emotions
+                "result": audio_emotions
             }
         
         # 综合分析结果
@@ -293,11 +260,13 @@ class MultiModelEmotionAnalyzer:
         
         # 情感分析对比
         text_emotions = results["stages"].get("text_emotion", {}).get("emotions", [])
-        audio_emotions = results["stages"].get("audio_emotion", {}).get("emotions", [])
+        audio_emotion_result = results["stages"].get("audio_emotion", {}).get("result")
         
-        if text_emotions and audio_emotions:
+        if text_emotions and audio_emotion_result:
             summary["key_findings"].append("文本与声学情感分析结果对比")
             summary["recommendations"].append("建议结合两种分析结果进行综合判断")
+            # 添加emotion2vec原始输出信息
+            summary["key_findings"].append(f"emotion2vec原始输出: {audio_emotion_result}")
         
         return summary
     
@@ -353,6 +322,11 @@ class ConfigManager:
                     "name": "paraformer-zh",
                     "type": "funasr",
                     "local_path": "paraformer-zh"
+                },
+                "text_emotion": {
+                    "name": "distilbert-base-uncased-go-emotions-student",
+                    "type": "transformers",
+                    "local_path": "distilbert-base-uncased-go-emotions-student"
                 }
             },
             "settings": {
