@@ -161,8 +161,15 @@ class MultiModelEmotionAnalyzer:
             image_url = None
             if image_path:
                 static_prefix = "/static/generated"
-                rel_path = Path(image_path).relative_to("data/generated_images")
-                image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                try:
+                    # 处理绝对路径和相对路径
+                    abs_image_path = Path(image_path).resolve()
+                    abs_gen_dir = Path("data/generated_images").resolve()
+                    rel_path = abs_image_path.relative_to(abs_gen_dir)
+                    image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                except ValueError as e:
+                    logger.warning(f"图片路径转换失败: {e}")
+                    image_url = None
 
             result = {
                 'text': text,
@@ -233,8 +240,15 @@ class MultiModelEmotionAnalyzer:
             image_url = None
             if image_path:
                 static_prefix = "/static/generated"
-                rel_path = Path(image_path).relative_to("data/generated_images")
-                image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                try:
+                    # 处理绝对路径和相对路径
+                    abs_image_path = Path(image_path).resolve()
+                    abs_gen_dir = Path("data/generated_images").resolve()
+                    rel_path = abs_image_path.relative_to(abs_gen_dir)
+                    image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                except ValueError as e:
+                    logger.warning(f"图片路径转换失败: {e}")
+                    image_url = None
 
             result = {
                 'transcribed_text': transcribed_text,
@@ -476,8 +490,15 @@ class MultiModelEmotionAnalyzer:
             image_url = None
             if image_path:
                 static_prefix = "/static/generated"
-                rel_path = Path(image_path).relative_to("data/generated_images")
-                image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                try:
+                    # 处理绝对路径和相对路径
+                    abs_image_path = Path(image_path).resolve()
+                    abs_gen_dir = Path("data/generated_images").resolve()
+                    rel_path = abs_image_path.relative_to(abs_gen_dir)
+                    image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                except ValueError as e:
+                    logger.warning(f"图片路径转换失败: {e}")
+                    image_url = None
 
             return {
                 'text': generated_text,

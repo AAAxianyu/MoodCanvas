@@ -18,14 +18,49 @@ router = APIRouter(prefix="/api/v1/images", tags=["images"])
 ALLOWED_SUFFIX = {".jpg", ".jpeg", ".png", ".webp"}
 
 def save_upload_temp(upload: UploadFile, tmp_dir: Path) -> Path:
-    tmp_dir.mkdir(parents=True, exist_ok=True)
-    suffix = Path(upload.filename or "").suffix.lower()
-    if suffix not in ALLOWED_SUFFIX:
-        raise HTTPException(status_code=400, detail=f"不支持的文件类型: {suffix}. 仅支持 {ALLOWED_SUFFIX}。")
-    tmp_path = tmp_dir / f"upload_{upload.filename}"
-    with tmp_path.open("wb") as f:
-        shutil.copyfileobj(upload.file, f)
-    return tmp_path
+    try:
+        # 确保临时目录存在
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 检查文件扩展名
+        filename = upload.filename or "unknown"
+        suffix = Path(filename).suffix.lower()
+        if suffix not in ALLOWED_SUFFIX:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"不支持的文件类型: {suffix}. 仅支持 {ALLOWED_SUFFIX}。"
+            )
+        
+        # 创建安全的临时文件名
+        safe_filename = "".join(c for c in filename if c.isalnum() or c in ('.', '_', '-'))
+        tmp_path = tmp_dir / f"upload_{safe_filename}"
+        
+        # 保存上传文件
+        try:
+            with tmp_path.open("wb") as f:
+                shutil.copyfileobj(upload.file, f)
+        except IOError as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"文件保存失败: {str(e)}"
+            )
+            
+        # 验证文件是否成功写入
+        if not tmp_path.exists() or tmp_path.stat().st_size == 0:
+            raise HTTPException(
+                status_code=500,
+                detail="文件保存失败: 文件为空或未正确写入"
+            )
+            
+        return tmp_path
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"文件处理失败: {str(e)}"
+        )
 
 class GenerateReq(BaseModel):
     prompt: str
@@ -38,7 +73,7 @@ class GenerateReq(BaseModel):
 
 @router.post("/edit")
 async def edit_image(
-    prompt: str = Query(..., description="编辑提示词，描述要如何修改图片"),
+    prompt: str = Form(..., description="编辑提示词，描述要如何修改图片"),
     image: UploadFile = File(None),
     image_url: str | None = Form(None),
     emotion_tags: str | None = Form(None),  # 新增：情感标签
@@ -168,7 +203,7 @@ async def generate_image(
 
 @router.post("/reedit")
 async def reedit_image(
-    prompt: str = Query(..., description="重新编辑提示词，描述要如何修改图片"),
+    prompt: str = Form(..., description="重新编辑提示词，描述要如何修改图片"),
     image: UploadFile = File(...),
     image_url: str | None = Form(None),
     guidance_scale: float | None = Form(None),

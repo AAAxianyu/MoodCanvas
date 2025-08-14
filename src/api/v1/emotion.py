@@ -1,7 +1,7 @@
 """
 情感分析API接口
 """
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form, Body
 from fastapi.responses import JSONResponse
 from pathlib import Path
 
@@ -36,7 +36,7 @@ async def analyze_emotion(
 
 @router.post("/analyze_text")
 async def analyze_text_emotion(
-    text: str = Form(...),
+    text: str = Body(..., embed=True),
     config_manager: ConfigManager = Depends(get_config_manager),
     analyzer: MultiModelEmotionAnalyzer = Depends(get_emotion_analyzer)
 ):

@@ -57,3 +57,18 @@ class RateLimitError(MoodCanvasError):
     """速率限制异常"""
     def __init__(self, message: str, error_code: str = "RATE_LIMIT_ERROR", details: dict = None):
         super().__init__(message, error_code, details)
+
+class ModelNotReadyError(MoodCanvasError):
+    """模型未就绪异常"""
+    def __init__(self, message: str, error_code: str = "MODEL_NOT_READY", details: dict = None):
+        super().__init__(message, error_code, details)
+
+class InvalidConfigError(MoodCanvasError):
+    """无效配置异常"""
+    def __init__(self, message: str, error_code: str = "INVALID_CONFIG", details: dict = None):
+        super().__init__(message, error_code, details)
+
+class InvalidModelTypeError(MoodCanvasError):
+    """无效模型类型异常"""
+    def __init__(self, message: str, error_code: str = "INVALID_MODEL_TYPE", details: dict = None):
+        super().__init__(message, error_code, details)
