@@ -99,3 +99,27 @@ src/data/models/
 # 临时文件
 *.tmp
 *.temp
+
+cache/*
+
+# --- models / caches / checkpoints ---
+cache/
+*.safetensors
+*.bin
+*.h5
+*.ckpt
+*.pt
+*.onnx
+*.tflite
+*.pb
+*.npy
+*.npz
+*.pkl
+*.joblib
+**/checkpoints/
+**/runs/
+**/wandb/
+
+# 你的具体大文件/目录（精确忽略）
+cache/ViT-L-14_openai_flavors.safetensors
+src/data/models/distilbert-base-uncased-go-emotions-student/
