@@ -1,0 +1,123 @@
+{
+  "project": {
+    "name": "三阶段多模型情感分析系统",
+    "version": "2.0.0",
+    "description": "集成Paraformer-zh ASR、英文文本情感分类、emotion2vec声学情感分析"
+  },
+  "paths": {
+    "input_dir": "data/input",
+    "output_dir": "data/output",
+    "temp_dir": "data/temp",
+    "models_cache": "./data/models",
+    "generated_images_dir": "data/generated_images"
+  },
+  "audio_files": {
+    "default": "test.wav",
+    "available": [
+      "asr_example.wav",
+      "hive-0001.wav",
+      "test.wav"
+    ]
+  },
+  "models": {
+    "emotion2vec": {
+      "name": "iic/emotion2vec_plus_large",
+      "type": "funasr",
+      "local_path": "data/models/emotion2vec_plus_large",
+      "description": "音频情感识别模型，支持9种情感标签：angry, disgusted, fearful, happy, neutral, other, sad, surprised, unknown"
+    },
+    "paraformer": {
+      "name": "paraformer-zh",
+      "type": "funasr",
+      "local_path": "data/models/paraformer-zh",
+      "description": "中文语音转文字模型"
+    },
+    "text_emotion": {
+      "name": "distilbert-base-uncased-go-emotions-student",
+      "type": "transformers",
+      "local_path": "data/models/distilbert-base-uncased-go-emotions-student",
+      "description": "英文文本情感分类模型，支持28种情感标签：admiration, amusement, anger, annoyance, approval, caring, confusion, curiosity, desire, disappointment, disapproval, disgust, embarrassment, excitement, fear, gratitude, grief, joy, love, nervousness, optimism, pride, realization, relief, remorse, sadness, surprise, neutral"
+    }
+  },
+  "image_models": {
+    "vlm": {
+      "use_api": true,
+      "provider": "doubao",
+      "model_name": "doubao-1.5-vision-lite-250315",
+      "api": {
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "api_key_env": "ARK_API_KEY"
+      },
+      "defaults": {
+        "guidance_scale": 7.5,
+        "size": "1024x1024",
+        "num_images": 1,
+        "watermark": true
+      }  
+
+    },
+    "i2i": {
+      "use_api": true,
+      "provider": "doubao",
+      "model_name": "doubao-seededit-3-0-i2i-250628",
+      "api": {
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "api_key_env": "ARK_API_KEY"
+      },
+      "defaults": {
+        "guidance_scale": 5.5,
+        "size": "adaptive",
+        "watermark": true
+      }
+    },
+    "t2i": {
+      "use_api": true,
+      "provider": "doubao",
+      "model_name": "doubao-seedream-3-0-t2i-250415",
+      "api": {
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "api_key_env": "ARK_API_KEY"
+      },
+      "defaults": {
+        "guidance_scale": 7.5,
+        "size": "1024x1024",
+        "num_images": 1,
+        "watermark": true
+      }
+    }
+  },
+  "text_generation": {
+    "use_api": true,
+    "provider": "openai",
+    "model_name": "gpt-3.5-turbo",
+    "api": {
+      "base_url": "https://api.openai.com/v1",
+      "api_key_env": "OPENAI_API_KEY"
+    },
+    "defaults": {
+      "max_tokens": 300,
+      "temperature": 0.8,
+      "style_options": ["poetic", "professional", "casual", "emotional"]
+    }
+  },
+  "secrets": {
+    "doubao_api_key_env": "ARK_API_KEY",
+    "openai_api_key_env": "OPENAI_API_KEY",
+    "stability_api_key_env": "STABILITY_API_KEY"
+  },
+  "settings": {
+    "use_local_models": true,
+    "download_to_project": true,
+    "cache_models": true,
+    "batch_size": 1,
+    "granularity": "utterance",
+    "extract_embedding": false
+  },
+  "output_format": {
+    "include_timestamp": true,
+    "include_raw_data": true,
+    "sort_by_confidence": true,
+    "max_emotions_display": 10
+  }
+}
+

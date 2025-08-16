@@ -1,0 +1,23 @@
+"""
+API依赖注入管理
+"""
+from pathlib import Path
+import os
+from src.core.config_manager import ConfigManager
+from src.services.emotion_analyzer import MultiModelEmotionAnalyzer
+from src.services.emotion_analyzer import ImageEmotionAnalyzerService
+def get_config_manager():
+    """获取配置管理器实例"""
+    project_root = Path(__file__).parent.parent.parent
+    config_path = os.path.join(project_root, "config", "config.json")
+    return ConfigManager(config_path)
+
+def get_emotion_analyzer():
+    """获取情感分析器实例"""
+    config_manager = get_config_manager()
+    return MultiModelEmotionAnalyzer(config_manager)
+
+def get_image_emotion_analyzer():
+    """获取图像情感分析器实例"""
+    config_manager = get_config_manager()
+    return ImageEmotionAnalyzerService(config_manager)
