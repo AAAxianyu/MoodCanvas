@@ -148,50 +148,33 @@ class MultiModelEmotionAnalyzer:
             if not self.text_emotion_model:
                 raise EmotionAnalysisError("文本情感分析模型未初始化")
             
+            # 1. 执行情感分析
             emotion_result = self.text_emotion_model.analyze(text)
             if not emotion_result:
                 raise EmotionAnalysisError("文本情感分析失败，未获得有效结果")
             
             emotion_tags = self._extract_text_emotion_tags(emotion_result)
-            confidence = self._extract_confidence(emotion_result)
+            
+            # 2. 调用第三方API生成文案
             generated_text = await self._generate_text_with_llm(text, emotion_tags, style_preference, language)
             
-            image_path = None
-            if self.image_generator:
-                try:
-                    image_prompt = self._build_image_prompt(text, emotion_tags, generated_text)
-                    image_result = self.image_generator.generate(prompt=image_prompt, save_local=True)
-                    image_path = image_result['local_paths'][0] if image_result and image_result.get('local_paths') else None
-                except Exception as e:
-                    logger.warning(f"图片生成失败: {e}")
+            # 3. 调用第三方API生成图片
+            image_prompt = self._build_image_prompt(text, emotion_tags, generated_text)
+            image_result = await self.image_service.generate_image_service(
+                prompt=image_prompt,
+                style=style_preference or 'default'
+            )
             
+            # 4. 组装结果
             processing_time = time.time() - start_time
-            # 构建完整的图片URL
-            image_url = None
-            if image_path:
-                static_prefix = "/static/generated"
-                try:
-                    # 处理绝对路径和相对路径
-                    abs_image_path = Path(image_path).resolve()
-                    abs_gen_dir = Path("data/generated_images").resolve()
-                    rel_path = abs_image_path.relative_to(abs_gen_dir)
-                    image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
-                except ValueError as e:
-                    logger.warning(f"图片路径转换失败: {e}")
-                    image_url = None
-
+            
             result = {
-                'text': text,
-                'emotion_tags': emotion_tags,
-                'emotion_confidence': confidence,
                 'generated_content': {
                     'text': generated_text,
-                    'image_path': image_path,
-                    'image_url': image_url,
+                    'image_url': image_result['generation_result']['remote_urls'],
                     'style': style_preference or 'default',
                     'metadata': {
                         'language': language,
-                        'style_preference': style_preference,
                         'generation_timestamp': datetime.now(timezone.utc).isoformat()
                     }
                 },
@@ -471,66 +454,89 @@ class MultiModelEmotionAnalyzer:
             logger.error(f"文本情感分析失败: {str(e)}", exc_info=True)
             raise EmotionAnalysisError(f"文本情感分析失败: {str(e)}")
 
-    async def _generate_content(self, text: str, emotion_tags: List[str]) -> Dict[str, Any]:
-        """生成文案和图片内容"""
+
+
+    async def _generate_content(self, text: str, emotion_tags: List[str], image_content: dict = None, image_path: Optional[str] = None) -> Dict[str, Any]:
+        """
+        统一生成逻辑：输入图/文/音至少一种，情感分析后合并，统一传给第三方API生成图和文，最终只返回第三方API生成的图和文。
+        图片编辑提示词：如有原图，需在原图基础上通过夸张、比喻等方式增强冲击力。
+        """
         try:
-            # 生成文案
+            # 构建第三方API输入
+            image_desc = image_content.get("caption") if image_content else ""
+            prompt_data = {
+                "image_content": image_desc,
+                "emotion_tags": emotion_tags,
+                "text": text,
+                "image_path": image_path
+            }
+            # 构造图片编辑/生成提示词
+            if image_path:
+                # 有原图，编辑提示词更夸张/比喻
+                image_prompt = f"请在原图基础上进行编辑，突出以下内容：{image_desc}，结合情感标签：{', '.join(emotion_tags)}，并通过夸张、比喻等方式增强视觉冲击力，生成一张PLOG图片"
+            else:
+                # 无原图，直接生成
+                image_prompt = f"根据描述'{image_desc}'和情感标签'{', '.join(emotion_tags)}'生成一张富有冲击力的PLOG图片。"
+
+            # 文案生成提示词
+            text_prompt = f"请根据图片内容'{image_desc}'、情感标签'{', '.join(emotion_tags)}'和原始文字'{text}'，生成一段富有感染力的文案，可适当使用夸张、比喻等修辞,用于PLOG内容"
+
+            # 统一调用第三方API（假设 text_generator/image_generator 支持传入图片路径和自定义prompt）
             generated_text = ""
+            generated_image_path = None
+            generated_image_url = None
             if self.text_generator:
                 try:
-                    generated_text = await self.text_generator.generate_text(text, emotion_tags)
+                    generated_text = await self.text_generator.generate_text(
+                        text=text,
+                        emotion_tags=emotion_tags,
+                        style=None,
+                        image_content=image_desc,
+                        custom_prompt=text_prompt
+                    )
                 except Exception as e:
                     logger.warning(f"文案生成失败: {e}")
-                    generated_text = f"基于'{text}'的情感'{', '.join(emotion_tags)}'，我为您创作了这段文案：在{', '.join(emotion_tags)}的旋律中，{text}仿佛有了新的生命..."
+                    generated_text = f"文案生成失败: {str(e)}"
             else:
-                generated_text = f"基于'{text}'的情感'{', '.join(emotion_tags)}'，我为您创作了这段文案：在{', '.join(emotion_tags)}的旋律中，{text}仿佛有了新的生命..."
-            
-            # 生成图片
-            image_path = None
+                generated_text = text_prompt
+
             if self.image_generator:
                 try:
-                    image_prompt = self._build_image_prompt(text, emotion_tags, generated_text)
-                    image_result = self.image_generator.generate(prompt=image_prompt, save_local=True)
-                    image_path = image_result['local_paths'][0] if image_result and image_result.get('local_paths') else None
+                    if image_path:
+                        # 编辑原图
+                        image_result = self.image_generator.edit_image(
+                            input_path_or_url=image_path,
+                            prompt=image_prompt,
+                            negative_prompt="",
+                            guidance_scale=7.5,
+                            save_local=True
+                        )
+                        generated_image_path = image_result['output_path'] if image_result and image_result.get('output_path') else None
+                    else:
+                        # 生成新图
+                        image_result = self.image_generator.generate(prompt=image_prompt, save_local=True)
+                        generated_image_path = image_result['local_paths'][0] if image_result and image_result.get('local_paths') else None
+                    # 构建图片URL
+                    if generated_image_path:
+                        static_prefix = "/static/generated"
+                        abs_image_path = Path(generated_image_path).resolve()
+                        abs_gen_dir = Path("data/generated_images").resolve()
+                        rel_path = abs_image_path.relative_to(abs_gen_dir)
+                        generated_image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
                 except Exception as e:
                     logger.warning(f"图片生成失败: {e}")
-            
-            # 构建完整的图片URL
-            image_url = None
-            if image_path:
-                static_prefix = "/static/generated"
-                try:
-                    # 处理绝对路径和相对路径
-                    abs_image_path = Path(image_path).resolve()
-                    abs_gen_dir = Path("data/generated_images").resolve()
-                    rel_path = abs_image_path.relative_to(abs_gen_dir)
-                    image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
-                except ValueError as e:
-                    logger.warning(f"图片路径转换失败: {e}")
-                    image_url = None
 
+            # 只返回第三方API生成的图和文
             return {
                 'text': generated_text,
-                'image_path': image_path,
-                'image_url': image_url,
-                'style': 'default',
-                'metadata': {
-                    'generation_timestamp': datetime.now(timezone.utc).isoformat(),
-                    'emotion_tags': emotion_tags
-                }
+                'image_url': generated_image_url
             }
-            
         except Exception as e:
             logger.error(f"内容生成失败: {str(e)}")
             return {
-                'text': f"基于'{text}'的情感分析结果生成文案失败",
-                'image_path': None,
-                'style': 'default',
-                'metadata': {
-                    'generation_timestamp': datetime.now(timezone.utc).isoformat(),
-                    'emotion_tags': emotion_tags,
-                    'error': str(e)
-                }
+                'text': f"文案生成失败: {str(e)}",
+                'image_url': None,
+                'error': str(e)
             }
 
 
@@ -786,12 +792,7 @@ class ImageEmotionAnalyzerService:
 
 
 
-        """
-        图片内容：{image_content},
-        当前情感：{}，
-        none
-        修改意见：你是一个小红书xxxxx
-        """
+      
 # class ImageEmotionAnalyzer:
 
 #     def __init__(self, config_manager: ConfigManager):
@@ -1037,5 +1038,3 @@ class ImageEmotionAnalyzerService:
 #             "clip_model": clip_name,
 #             "device": device,
 #         }
-
-    
