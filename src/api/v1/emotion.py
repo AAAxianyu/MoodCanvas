@@ -1,22 +1,15 @@
 """
 情感分析API接口
 """
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form, Body
 from fastapi.responses import JSONResponse
 from pathlib import Path
-import sys
-import os
-
-# 添加项目根目录到Python路径
-project_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(project_root))
 
 from src.core.config_manager import ConfigManager
 from src.services.emotion_analyzer import MultiModelEmotionAnalyzer
 from src.services.emotion_analyzer import ImageEmotionAnalyzerService
 from src.utils.file_utils import save_upload_file
 from src.api.dependencies import get_config_manager, get_emotion_analyzer, get_image_emotion_analyzer
-
 
 router = APIRouter(prefix="/api/v1/emotion", tags=["emotion"])
 
@@ -35,7 +28,7 @@ async def analyze_emotion(
         audio_path = save_upload_file(audio_file, temp_dir, "emotion_analysis")
         
         # 运行三阶段分析
-        results = analyzer.run_three_stage_analysis(str(audio_path))
+        results = await analyzer.run_three_stage_analysis(str(audio_path))
         
         return JSONResponse(content=results)
         
@@ -44,7 +37,7 @@ async def analyze_emotion(
 
 @router.post("/analyze_text")
 async def analyze_text_emotion(
-    text: str = Form(...),
+    text: str = Body(..., embed=True),
     config_manager: ConfigManager = Depends(get_config_manager),
     analyzer: MultiModelEmotionAnalyzer = Depends(get_emotion_analyzer)
 ):
@@ -82,21 +75,9 @@ def analyze_image_emotion(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/new")
-async def analyze(
-    audio_file: UploadFile = File(...),
-    text: str = Form(...),
-    image_file: UploadFile = File(...),
-    config_manager: ConfigManager = Depends(get_config_manager),
-    analyzer: MultiModelEmotionAnalyzer = Depends(get_emotion_analyzer)
-):
-    if:
-        pass
-    pass
+
 
 @router.get("/health")
 async def emotion_health():
     """情感分析服务健康检查"""
     return {"status": "ok", "service": "emotion_analysis"}
-
-

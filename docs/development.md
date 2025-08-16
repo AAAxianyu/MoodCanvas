@@ -46,7 +46,11 @@ ARK_API_KEY=your_doubao_api_key_here
 - **`BaseImageModel`**: 图像模型基类
 
 ### 数据目录
+<<<<<<< HEAD
 - **`data/models/`**: 本地模型文件
+=======
+- **`src/data/models/`**: 本地模型文件
+>>>>>>> 6c05c4473a1d189c5635a8fac8fd5c44011bd4e8
 - **`data/input/`**: 输入文件
 - **`data/output/`**: 输出文件
 - **`data/temp/`**: 临时文件

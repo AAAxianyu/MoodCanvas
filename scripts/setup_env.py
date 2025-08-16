@@ -17,7 +17,7 @@ def setup_environment():
     
     # 创建必要的目录
     directories = [
-        "data/models",
+        "src/data/models",
         "data/input", 
         "data/output",
         "data/temp",

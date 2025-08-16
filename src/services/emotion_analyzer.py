@@ -33,58 +33,6 @@ logger = logging.getLogger(__name__)
 class MultiModelEmotionAnalyzer:
     """三阶段多模型情感分析系统"""
     
-    def __init__(self, config_manager):
-        self.config_manager = config_manager
-        self.asr_model = None
-        self.text_emotion_model = None
-        self.audio_emotion_model = None
-        self.setup_models()
-    
-    def setup_models(self):
-        """初始化三个模型"""
-        print("🚀 正在初始化三阶段情感分析模型...")
-        use_local = self.config_manager.config.get("settings", {}).get("use_local_models", True)
-        
-        # 阶段1: Paraformer-zh ASR
-        try:
-            paraformer_config = self.config_manager.config.get("models", {}).get("paraformer", {})
-            paraformer_config["use_local_models"] = use_local
-            self.asr_model = ParaformerModel(paraformer_config)
-            if self.asr_model.load_model():
-                print("✅ 阶段1: Paraformer-zh ASR 模型加载成功")
-            else:
-                print("❌ 阶段1: Paraformer-zh ASR 模型加载失败")
-        except Exception as e:
-            print(f"❌ 阶段1: Paraformer-zh ASR 模型初始化失败: {e}")
-            self.asr_model = None
-        
-        # 阶段2: 文本情感分类
-        try:
-            text_emotion_config = self.config_manager.config.get("models", {}).get("text_emotion", {})
-            text_emotion_config["use_local_models"] = use_local
-            self.text_emotion_model = TextEmotionModel(text_emotion_config)
-            if self.text_emotion_model.load_model():
-                print("✅ 阶段2: 文本情感分类模型加载成功")
-            else:
-                print("❌ 阶段2: 文本情感分类模型加载失败")
-        except Exception as e:
-            print(f"❌ 阶段2: 文本情感分类模型初始化失败: {e}")
-            self.text_emotion_model = None
-        
-        # 阶段3: emotion2vec 声学情感分析
-        try:
-            audio_emotion_config = self.config_manager.config.get("models", {}).get("emotion2vec", {})
-            audio_emotion_config["use_local_models"] = use_local
-            self.audio_emotion_model = AudioEmotionModel(audio_emotion_config)
-            if self.audio_emotion_model.load_model():
-                print("✅ 阶段3: emotion2vec 声学情感分析模型加载成功")
-            else:
-                print("❌ 阶段3: emotion2vec 声学情感分析模型初始化失败")
-        except Exception as e:
-            print(f"❌ 阶段3: emotion2vec 声学情感分析模型初始化失败: {e}")
-            self.audio_emotion_model = None
-
-class EmotionAnalyzerService:
     EMOTION2VEC_LABELS = {0: "angry",1: "disgusted",2: "fearful",3: "happy",4: "neutral",5: "other",6: "sad",7: "surprised",8: "unknown"}
     TEXT_EMOTION_LABELS = {
         0: "admiration", 1: "amusement", 2: "anger", 3: "annoyance", 4: "approval",
@@ -100,7 +48,7 @@ class EmotionAnalyzerService:
         self.asr_model = None
         self.text_emotion_model = None
         self.audio_emotion_model = None
-        self.image_generator = None
+        self.image_generator = ImageGenerator(config_manager)
         self.image_editor = None
         self.text_generator = None
         self.setup_models()
@@ -114,11 +62,21 @@ class EmotionAnalyzerService:
         try:
             paraformer_config = self.config_manager.config.get("models", {}).get("paraformer", {})
             paraformer_config["use_local_models"] = use_local
+            
+            # 优先使用model_id，如果没有则使用name
+            model_id = paraformer_config.get("model_id", paraformer_config.get("name"))
+            if model_id:
+                paraformer_config["model_id"] = model_id
+            
             self.asr_model = ParaformerModel(paraformer_config)
-            if self.asr_model.load_model():
-                print("✅ 阶段1: Paraformer-zh ASR 模型加载成功")
+            # 检查模型是否有load_model方法，如果没有则跳过
+            if hasattr(self.asr_model, 'load_model'):
+                if self.asr_model.load_model():
+                    print("✅ 阶段1: Paraformer-zh ASR 模型加载成功")
+                else:
+                    print("❌ 阶段1: Paraformer-zh ASR 模型加载失败")
             else:
-                print("❌ 阶段1: Paraformer-zh ASR 模型加载失败")
+                print("⚠️  阶段1: Paraformer-zh ASR 模型初始化完成（无load_model方法）")
         except Exception as e:
             print(f"❌ 阶段1: Paraformer-zh ASR 模型初始化失败: {e}")
             self.asr_model = None
@@ -127,11 +85,20 @@ class EmotionAnalyzerService:
         try:
             text_emotion_config = self.config_manager.config.get("models", {}).get("text_emotion", {})
             text_emotion_config["use_local_models"] = use_local
+            
+            # 优先使用model_id，如果没有则使用name
+            model_id = text_emotion_config.get("model_id", text_emotion_config.get("name"))
+            if model_id:
+                text_emotion_config["model_id"] = model_id
+            
             self.text_emotion_model = TextEmotionModel(text_emotion_config)
-            if self.text_emotion_model.load_model():
-                print("✅ 阶段2: 文本情感分类模型加载成功")
+            if hasattr(self.text_emotion_model, 'load_model'):
+                if self.text_emotion_model.load_model():
+                    print("✅ 阶段2: 文本情感分类模型加载成功")
+                else:
+                    print("❌ 阶段2: 文本情感分类模型加载失败")
             else:
-                print("❌ 阶段2: 文本情感分类模型加载失败")
+                print("⚠️  阶段2: 文本情感分类模型初始化完成（无load_model方法）")
         except Exception as e:
             print(f"❌ 阶段2: 文本情感分类模型初始化失败: {e}")
             self.text_emotion_model = None
@@ -140,23 +107,36 @@ class EmotionAnalyzerService:
         try:
             audio_emotion_config = self.config_manager.config.get("models", {}).get("emotion2vec", {})
             audio_emotion_config["use_local_models"] = use_local
+            
+            # 优先使用model_id，如果没有则使用name
+            model_id = audio_emotion_config.get("model_id", audio_emotion_config.get("name"))
+            if model_id:
+                audio_emotion_config["model_id"] = model_id
+            
             self.audio_emotion_model = AudioEmotionModel(audio_emotion_config)
-            if self.audio_emotion_model.load_model():
-                print("✅ 阶段3: emotion2vec 声学情感分析模型加载成功")
+            if hasattr(self.audio_emotion_model, 'load_model'):
+                if self.audio_emotion_model.load_model():
+                    print("✅ 阶段3: emotion2vec 声学情感分析模型加载成功")
+                else:
+                    print("❌ 阶段3: emotion2vec 声学情感分析模型初始化失败")
             else:
-                print("❌ 阶段3: emotion2vec 声学情感分析模型初始化失败")
+                print("⚠️  阶段3: emotion2vec 声学情感分析模型初始化完成（无load_model方法）")
         except Exception as e:
             print(f"❌ 阶段3: emotion2vec 声学情感分析模型初始化失败: {e}")
             self.audio_emotion_model = None
 
     def _load_models(self):
+        """加载所有模型（兼容性方法）"""
         try:
-            if not self.text_emotion_model.load_model():
-                logger.warning("文本情感分析模型加载失败")
-            if not self.audio_emotion_model.load_model():
-                logger.warning("音频情感分析模型加载失败")
-            if not self.asr_model.load_model():
-                logger.warning("ASR模型加载失败")
+            if self.text_emotion_model and hasattr(self.text_emotion_model, 'load_model'):
+                if not self.text_emotion_model.load_model():
+                    logger.warning("文本情感分析模型加载失败")
+            if self.audio_emotion_model and hasattr(self.audio_emotion_model, 'load_model'):
+                if not self.audio_emotion_model.load_model():
+                    logger.warning("音频情感分析模型加载失败")
+            if self.asr_model and hasattr(self.asr_model, 'load_model'):
+                if not self.asr_model.load_model():
+                    logger.warning("ASR模型加载失败")
             logger.info("模型加载完成")
         except Exception as e:
             logger.error(f"模型加载失败: {str(e)}")
@@ -165,21 +145,56 @@ class EmotionAnalyzerService:
         start_time = time.time()
         try:
             logger.info(f"开始处理文字情感分析，输入长度: {len(text)}")
+            if not self.text_emotion_model:
+                raise EmotionAnalysisError("文本情感分析模型未初始化")
+            
             emotion_result = self.text_emotion_model.analyze(text)
             if not emotion_result:
                 raise EmotionAnalysisError("文本情感分析失败，未获得有效结果")
+            
             emotion_tags = self._extract_text_emotion_tags(emotion_result)
             confidence = self._extract_confidence(emotion_result)
             generated_text = await self._generate_text_with_llm(text, emotion_tags, style_preference, language)
-            image_prompt = self._build_image_prompt(text, emotion_tags, generated_text)
-            image_result = self.image_generator.generate(prompt=image_prompt, save_local=True)
-            image_path = image_result['local_paths'][0] if image_result and image_result.get('local_paths') else None
+            
+            image_path = None
+            if self.image_generator:
+                try:
+                    image_prompt = self._build_image_prompt(text, emotion_tags, generated_text)
+                    image_result = self.image_generator.generate(prompt=image_prompt, save_local=True)
+                    image_path = image_result['local_paths'][0] if image_result and image_result.get('local_paths') else None
+                except Exception as e:
+                    logger.warning(f"图片生成失败: {e}")
+            
             processing_time = time.time() - start_time
+            # 构建完整的图片URL
+            image_url = None
+            if image_path:
+                static_prefix = "/static/generated"
+                try:
+                    # 处理绝对路径和相对路径
+                    abs_image_path = Path(image_path).resolve()
+                    abs_gen_dir = Path("data/generated_images").resolve()
+                    rel_path = abs_image_path.relative_to(abs_gen_dir)
+                    image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                except ValueError as e:
+                    logger.warning(f"图片路径转换失败: {e}")
+                    image_url = None
+
             result = {
                 'text': text,
                 'emotion_tags': emotion_tags,
                 'emotion_confidence': confidence,
-                'generated_content': {'text': generated_text, 'image_path': image_path, 'style': style_preference or 'default', 'metadata': {'language': language,'style_preference': style_preference,'generation_timestamp': datetime.utcnow().isoformat()}},
+                'generated_content': {
+                    'text': generated_text,
+                    'image_path': image_path,
+                    'image_url': image_url,
+                    'style': style_preference or 'default',
+                    'metadata': {
+                        'language': language,
+                        'style_preference': style_preference,
+                        'generation_timestamp': datetime.now(timezone.utc).isoformat()
+                    }
+                },
                 'processing_time': round(processing_time, 3),
                 'status': 'success'
             }
@@ -193,23 +208,77 @@ class EmotionAnalyzerService:
         temp_audio_path = None
         try:
             temp_audio_path = self._save_temp_audio(audio_data)
+            
+            if not self.asr_model:
+                raise AudioProcessingError("ASR模型未初始化")
+            
             transcribed_text = self.asr_model.transcribe(temp_audio_path)
             if not transcribed_text:
                 raise AudioProcessingError("语音识别失败")
-            audio_emotion_result = self.audio_emotion_model.analyze(temp_audio_path)
-            audio_emotion_tags = self._extract_audio_emotion_tags(audio_emotion_result)
-            text_emotion_result = self.text_emotion_model.analyze(transcribed_text)
-            text_emotion_tags = self._extract_text_emotion_tags(text_emotion_result)
+            
+            audio_emotion_tags = ['neutral']  # 默认值
+            if self.audio_emotion_model:
+                try:
+                    audio_emotion_result = self.audio_emotion_model.analyze(temp_audio_path)
+                    audio_emotion_tags = self._extract_audio_emotion_tags(audio_emotion_result)
+                except Exception as e:
+                    logger.warning(f"音频情感分析失败: {e}")
+            
+            text_emotion_tags = ['neutral']  # 默认值
+            if self.text_emotion_model:
+                try:
+                    text_emotion_result = self.text_emotion_model.analyze(transcribed_text)
+                    text_emotion_tags = self._extract_text_emotion_tags(text_emotion_result)
+                except Exception as e:
+                    logger.warning(f"文本情感分析失败: {e}")
+            
             merged_emotion = self._fuse_emotions(audio_emotion_tags, text_emotion_tags, fusion_strategy)
             generated_text = await self._generate_text_with_llm(transcribed_text, merged_emotion, None, language)
-            image_prompt = self._build_image_prompt(transcribed_text, merged_emotion, generated_text)
-            image_result = self.image_generator.generate(prompt=image_prompt, save_local=True)
-            image_path = image_result['local_paths'][0] if image_result and image_result.get('local_paths') else None
+            
+            image_path = None
+            if self.image_generator:
+                try:
+                    image_prompt = self._build_image_prompt(transcribed_text, merged_emotion, generated_text)
+                    image_result = self.image_generator.generate(prompt=image_prompt, save_local=True)
+                    image_path = image_result['local_paths'][0] if image_result and image_result.get('local_paths') else None
+                except Exception as e:
+                    logger.warning(f"图片生成失败: {e}")
+            
             processing_time = time.time() - start_time
+            # 构建完整的图片URL
+            image_url = None
+            if image_path:
+                static_prefix = "/static/generated"
+                try:
+                    # 处理绝对路径和相对路径
+                    abs_image_path = Path(image_path).resolve()
+                    abs_gen_dir = Path("data/generated_images").resolve()
+                    rel_path = abs_image_path.relative_to(abs_gen_dir)
+                    image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                except ValueError as e:
+                    logger.warning(f"图片路径转换失败: {e}")
+                    image_url = None
+
             result = {
                 'transcribed_text': transcribed_text,
-                'emotion_analysis': {'audio_emotion': audio_emotion_tags,'text_emotion': text_emotion_tags,'merged_emotion': merged_emotion,'fusion_rules': fusion_strategy},
-                'generated_content': {'text': generated_text,'image_path': image_path,'style': 'default','metadata': {'language': language,'dual_analysis': enable_dual_analysis,'fusion_strategy': fusion_strategy,'generation_timestamp': datetime.utcnow().isoformat()}},
+                'emotion_analysis': {
+                    'audio_emotion': audio_emotion_tags,
+                    'text_emotion': text_emotion_tags,
+                    'merged_emotion': merged_emotion,
+                    'fusion_rules': fusion_strategy
+                },
+                'generated_content': {
+                    'text': generated_text,
+                    'image_path': image_path,
+                    'image_url': image_url,
+                    'style': 'default',
+                    'metadata': {
+                        'language': language,
+                        'dual_analysis': enable_dual_analysis,
+                        'fusion_strategy': fusion_strategy,
+                        'generation_timestamp': datetime.now(timezone.utc).isoformat()
+                    }
+                },
                 'processing_time': round(processing_time, 3),
                 'status': 'success'
             }
@@ -293,6 +362,7 @@ class EmotionAnalyzerService:
                     emotion_count[emotion] = emotion_count.get(emotion, 0) + 1
             sorted_emotions = sorted(emotion_count.items(), key=lambda x: x[1], reverse=True)
             return [emotion for emotion, _ in sorted_emotions[:3]]
+    
     async def _generate_text_with_llm(self, text: str, emotion_tags: List[str], style: Optional[str], language: str) -> str:
         emotion_desc = ", ".join(emotion_tags)
         style_desc = f"风格：{style}" if style else ""
@@ -328,18 +398,22 @@ class EmotionAnalyzerService:
                 raise AudioProcessingError("语音识别失败")
             
             # 阶段2: 文本情感分析
-            if not self.text_emotion_model:
-                raise EmotionAnalysisError("文本情感分析模型未初始化")
-            
-            text_emotion_result = self.text_emotion_model.analyze(transcribed_text)
-            text_emotion_tags = self._extract_text_emotion_tags(text_emotion_result)
+            text_emotion_tags = ['neutral']  # 默认值
+            if self.text_emotion_model:
+                try:
+                    text_emotion_result = self.text_emotion_model.analyze(transcribed_text)
+                    text_emotion_tags = self._extract_text_emotion_tags(text_emotion_result)
+                except Exception as e:
+                    logger.warning(f"文本情感分析失败: {e}")
             
             # 阶段3: 音频情感分析
-            if not self.audio_emotion_model:
-                raise EmotionAnalysisError("音频情感分析模型未初始化")
-            
-            audio_emotion_result = self.audio_emotion_model.analyze(audio_path)
-            audio_emotion_tags = self._extract_audio_emotion_tags(audio_emotion_result)
+            audio_emotion_tags = ['neutral']  # 默认值
+            if self.audio_emotion_model:
+                try:
+                    audio_emotion_result = self.audio_emotion_model.analyze(audio_path)
+                    audio_emotion_tags = self._extract_audio_emotion_tags(audio_emotion_result)
+                except Exception as e:
+                    logger.warning(f"音频情感分析失败: {e}")
             
             # 融合情感标签
             merged_emotion = self._fuse_emotions(audio_emotion_tags, text_emotion_tags, "weighted")
@@ -421,9 +495,24 @@ class EmotionAnalyzerService:
                 except Exception as e:
                     logger.warning(f"图片生成失败: {e}")
             
+            # 构建完整的图片URL
+            image_url = None
+            if image_path:
+                static_prefix = "/static/generated"
+                try:
+                    # 处理绝对路径和相对路径
+                    abs_image_path = Path(image_path).resolve()
+                    abs_gen_dir = Path("data/generated_images").resolve()
+                    rel_path = abs_image_path.relative_to(abs_gen_dir)
+                    image_url = f"{static_prefix}/{str(rel_path).replace('\\', '/')}"
+                except ValueError as e:
+                    logger.warning(f"图片路径转换失败: {e}")
+                    image_url = None
+
             return {
                 'text': generated_text,
                 'image_path': image_path,
+                'image_url': image_url,
                 'style': 'default',
                 'metadata': {
                     'generation_timestamp': datetime.now(timezone.utc).isoformat(),

@@ -58,7 +58,18 @@ pip install torch torchaudio transformers funasr modelscope fastapi uvicorn
 ```
 
 ## 🎯 使用方法
-配置config
+
+### API路由概览
+
+| 路由 | 方法 | 描述 | 参数 |
+|------|------|------|------|
+| `/api/v1/emotion/analyze_text` | POST | 文本情感分析 | `text` |
+| `/api/v1/emotion/analyze` | POST | 语音情感分析 | `audio_file` |
+| `/api/v1/images/generate` | POST | 文本生成图片 | `prompt`, `size`, `save_local` |
+| `/api/v1/images/edit` | POST | 情感增强图片编辑 | `image`, `prompt`, `emotion_tags`, `original_text` |
+| `/api/v1/images/reedit` | POST | 图片重新编辑 | `image`, `prompt` |
+| `/api/v1/health` | GET | 服务健康检查 | - |
+
 ### 启动服务
 
 ```bash

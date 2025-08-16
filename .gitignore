@@ -45,7 +45,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -88,21 +87,12 @@ ehthumbs.db
 Thumbs.db
 
 # 项目特定文件
-temp_outputs/
-outputs/
-models_cache/
-*.wav
-*.mp3
-*.flac
-*.m4a
-*.aac
-
-# 模型文件 (可选，如果模型文件很大)
-# emotion2vec_plus_large/
-# paraformer-zh/
-# distilbert-base-uncased-go-emotions-student/
-
-# 日志文件
+.env
+config/
+data/models/
+data/generated_images/
+data/output/
+src/data/models/
 *.log
 *.txt
 

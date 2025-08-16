@@ -179,7 +179,11 @@ DEBUG=false
     "input_dir": "data/input",
     "output_dir": "data/output",
     "temp_dir": "data/temp",
+<<<<<<< HEAD
     "models_cache": "./data/models",
+=======
+    "models_cache": "./src/data/models",
+>>>>>>> 6c05c4473a1d189c5635a8fac8fd5c44011bd4e8
     "generated_images_dir": "data/generated_images"
   }
 }

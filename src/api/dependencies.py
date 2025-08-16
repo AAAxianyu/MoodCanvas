@@ -8,9 +8,11 @@ from src.services.emotion_analyzer import MultiModelEmotionAnalyzer
 from src.services.emotion_analyzer import ImageEmotionAnalyzerService
 def get_config_manager():
     """获取配置管理器实例"""
-    project_root = Path(__file__).parent.parent.parent
-    config_path = os.path.join(project_root, "config", "config.json")
-    return ConfigManager(config_path)
+    # 使用更稳定的路径查找方式
+    current_file = Path(__file__)
+    project_root = current_file.parent.parent.parent
+    config_path = project_root / "config" / "config.json"
+    return ConfigManager(str(config_path))
 
 def get_emotion_analyzer():
     """获取情感分析器实例"""

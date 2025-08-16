@@ -46,7 +46,11 @@ MoodCanvas 是一个三阶段多模型情感分析系统，提供语音情感分
 {
   "status": "ok",
   "directories": {
+<<<<<<< HEAD
     "data/models": true,
+=======
+    "src/data/models": true,
+>>>>>>> 6c05c4473a1d189c5635a8fac8fd5c44011bd4e8
     "data/input": true,
     "data/output": true,
     "data/temp": true
