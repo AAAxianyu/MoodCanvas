@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "src/pages/splash/splash",
+    "src/pages/index/index"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "",
+    "navigationBarBackgroundColor": "#FFFFFF"
+  }
+}

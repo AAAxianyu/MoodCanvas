@@ -1,0 +1,65 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #FFF9E6;
+  align-items: center;
+  position: relative;
+}
+
+.logo-container {
+  position: absolute;
+  left: 84px;
+  top: 87px;
+  width: 235px;
+  height: 92px;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cloud-container {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  height: 600rpx;
+}
+
+.cloud-image {
+  position: absolute;
+  bottom: -200rpx;
+  left: 0;
+  width: 100%;
+  height: auto;
+}
+
+.vector-container {
+  position: absolute;
+  left: -89.96px;
+  top: 467.31px;
+  width: 537.2px;
+  height: 498.3px;
+}
+
+.vector-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.group16-container {
+  position: absolute;
+  left: 81px;
+  top: 704px;
+  width: 256.09px;
+  height: 109.49px;
+}
+
+.group16-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

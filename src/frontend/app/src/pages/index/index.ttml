@@ -1,0 +1,18 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar">
+    <image class="left-icon" src="../../assets/icons/List.png" mode="aspectFit"></image>
+    <view class="navbar-title">MoodCanvas</view>
+    <image class="right-icon" src="../../assets/icons/Eyes.png" mode="aspectFit"></image>
+  </view>
+
+  <!-- 页面内容 -->
+  <view class="content">
+    <view class="intro">
+      <text>Welcome to MoodCanvas</text>
+    </view>
+    <view class="icon-wrapper">
+      <image class="icon-image" src="../../assets/logos/MoodCanvas.png" mode="aspectFit"></image>
+    </view>
+  </view>
+</view>
