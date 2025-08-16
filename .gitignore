@@ -100,10 +100,9 @@ src/data/models/
 *.tmp
 *.temp
 
-cache/*
 
 # --- models / caches / checkpoints ---
-cache/
+cache/*
 *.safetensors
 *.bin
 *.h5
