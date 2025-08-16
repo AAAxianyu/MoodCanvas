@@ -20,6 +20,7 @@ from src.models.emotion.text_emotion import TextEmotionModel
 from src.models.emotion.audio_emotion import AudioEmotionModel
 from src.models.image.image2image import ImageEditor
 from src.models.image.text2image import ImageGenerator
+from src.services.text_generator import TextGenerator
 from src.models.asr.paraformer import ParaformerModel
 from src.utils.file_utils import save_upload_file
 
@@ -49,8 +50,8 @@ class MultiModelEmotionAnalyzer:
         self.text_emotion_model = None
         self.audio_emotion_model = None
         self.image_generator = ImageGenerator(config_manager)
-        self.image_editor = None
-        self.text_generator = None
+        self.image_editor = ImageEditor(config_manager)
+        self.text_generator = TextGenerator(config_manager)
         self.setup_models()
     
     def setup_models(self):

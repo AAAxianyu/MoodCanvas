@@ -6,6 +6,9 @@ import json
 import requests
 from typing import Dict, Any, Optional
 from src.core.config_manager import ConfigManager
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TextGenerator:
     """文案生成服务"""
@@ -16,7 +19,12 @@ class TextGenerator:
         key = self.config_manager.get_secret("deepseek_api_key_env")
         self.api_key = os.getenv(key)
         
-    async def generate_text(self, text: str, emotion_tags: list, style: Optional[str] = None) -> str:
+    async def generate_text(self, text: str, 
+                            emotion_tags: list, 
+                            style: Optional[str] = None,
+                            image_content: str = None,
+                            custom_prompt: str = None
+                            ) -> str:
         """
         生成基于情感标签的文案
         

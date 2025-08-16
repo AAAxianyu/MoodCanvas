@@ -176,6 +176,9 @@ class ConfigManager:
         elif model_type == "stability":
             # Stability AI模型
             return self.get_secret("stability_api_key_env")
+        elif model_type == "deepseek":
+            # DeepSeek模型
+            return self.get_secret("deepseek_api_key_env")
         else:
             return None
     
