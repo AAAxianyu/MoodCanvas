@@ -2,13 +2,17 @@ Page({
   onLoad() {
     setTimeout(() => {
       tt.redirectTo({
-        url: '/src/pages/index/index',
-        success: () => console.log('跳转成功'),
-        fail: (err) => {
-          console.error('跳转失败:', err);
-          tt.showToast({ title: '跳转失败', icon: 'none' });
-        }
+        url: '/src/pages/index/index'
       });
-    }, 3000);
+    }, 5000); // 修改为5秒
+  },
+
+  onImageError(e) {
+    console.error('启动图加载失败:', e.detail.errMsg);
+    tt.showToast({ title: '启动图加载失败', icon: 'none' });
+    // 加载替代图片
+    this.setData({
+      imageUrl: '/static/images/test.jpg' // 替代图片路径
+    });
   }
 });

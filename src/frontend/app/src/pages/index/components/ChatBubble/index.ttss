@@ -17,3 +17,28 @@
   height: 32rpx;
   margin-right: 10rpx;
 }
+
+.composite-message {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.composite-text {
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+.composite-image {
+  width: 100%;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 图片消息样式 */
+image[type="image"] {
+  max-width: 80%;
+  max-height: 300rpx;
+  border-radius: 16rpx;
+  margin: 10rpx 0;
+}

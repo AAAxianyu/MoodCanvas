@@ -23,11 +23,55 @@ Page({
     previewImages: [], // 新增：用于预览的图片列表
     audioTempPath: null, // 新增：存储录音临时路径
     isRecording: false, // 新增：录音状态标志
-    recordingTime: 0 // 新增：录音时长
+    recordingTime: 0, // 新增：录音时长
+    showHeaderImage: true, // 控制图片显示
+    showSidebar: false, // 新增：控制侧边栏显隐
   },
 
   // 防止连点
   _sendingLock: false,
+
+  onLoad() {
+    // 在 onLoad 中添加版本检测
+    tt.getSystemInfo({
+      success: (res) => {
+        if (compareVersion(res.SDKVersion, '2.87.0') >= 0) {
+          this._supportKeyboardEvent = true;
+        }
+      }
+    });
+
+    // 修复：使用输入框组件的 bindkeyboardheightchange 事件
+    this._keyboardHeightChange = (res) => {
+      this.setData({
+        keyboardHeight: res.detail.height,
+        composerPaddingBottom: res.detail.height > 0 ? '0' : '24rpx'
+      });
+      this._scrollToBottom();
+    };
+
+    // 3秒后自动隐藏图片
+    setTimeout(() => {
+      this.setData({ showHeaderImage: false });
+    }, 3000);
+  },
+
+  onUnload() {
+    // 修复：清理事件监听（在组件中通过 offKeyboardHeightChange 实现）
+    if (this._keyboardHeightChange) {
+      this._keyboardHeightChange = null;
+    }
+  },
+
+  toggleSidebar() {
+    this.setData({ showSidebar: !this.data.showSidebar });
+  },
+
+  navigateTo(e) {
+    const url = e.currentTarget.dataset.url;
+    tt.navigateTo({ url });
+    this.setData({ showSidebar: false });
+  },
 
   // —— 输入 —— //
   handleInput(e) {
@@ -135,7 +179,7 @@ Page({
   },
 
   // —— 发送（按钮/回车共用） —— //
-  handleSend(e) {
+  async handleSend(e) {
     if (this._sendingLock) return;
     this.setData({ showLoading: true });
 
@@ -193,21 +237,67 @@ Page({
       messages: this.data.messages.concat(messagesToAdd),
       inputValue: '',
       previewImages: [],
-      audioTempPath: null // 清空录音
-    }, () => {
+      audioTempPath: null
+    }, async () => {
       this._scrollToBottom();
       this._pushTyping();
-      setTimeout(() => {
+
+      try {
+        // 构造FormData
+        const formData = new tt.FormData();
+        if (text) formData.append('text', text);
+        if (hasImages) {
+          this.data.previewImages.forEach((path, index) => {
+            formData.append('image_file', {
+              uri: path,
+              name: `image_${index}.jpg`,
+              type: 'image/jpeg'
+            });
+          });
+        }
+        if (hasAudio) {
+          formData.append('audio', {
+            uri: this.data.audioTempPath,
+            name: 'audio.wav',
+            type: 'audio/wav'
+          });
+        }
+
+        // 发送请求
+        const response = await this._sendToBackend(formData);
+
+        // 处理响应
+        if (response.audio?.generated_content) {
+          this._replaceTypingWith({
+            mid: genId('ai'),
+            role: 'ai',
+            type: 'text',
+            content: response.audio.generated_content.text,
+            time: formatTime()
+          });
+
+          if (response.generated_image_url) {
+            this._appendMessage({
+              mid: genId('ai'),
+              role: 'ai',
+              type: 'image',
+              src: response.generated_image_url, // 直接使用返回的URL
+              time: formatTime()
+            });
+          }
+        }
+      } catch (err) {
         this._replaceTypingWith({
           mid: genId('ai'),
           role: 'ai',
           type: 'text',
-          content: '已收到你的消息～',
+          content: '请求失败，请稍后重试',
           time: formatTime()
         });
+      } finally {
         this.setData({ showLoading: false });
-      }, 600);
-      this._sendingLock = false;
+        this._sendingLock = false;
+      }
     });
   },
 
@@ -301,9 +391,50 @@ Page({
       innerAudioContext.src = src;
       innerAudioContext.play();
     }
-  }
+  },
 
-  
+  async _sendToBackend(formData) {
+    // 修复：添加超时和重试机制
+    try {
+      const res = await tt.request({
+        url: 'http://115.190.117.155/api/v1/emotion/analyze_multi',
+        method: 'POST',
+        timeout: 30000, // 30秒超时
+        header: {
+          'Content-Type': 'multipart/form-data'
+        },
+        data: formData
+      });
+
+      if (res.statusCode === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求失败: ${res.statusCode}`);
+      }
+    } catch (err) {
+      console.error('请求出错:', err);
+      if (err.errMsg.includes('timeout')) {
+        tt.showToast({ title: '请求超时', icon: 'none' });
+      } else {
+        tt.showToast({ title: '请求失败', icon: 'none' });
+      }
+      throw err;
+    }
+  },
+
+  // 新增图片处理
+  onImageLoad(e) {
+    console.log('图片加载成功:', e.currentTarget.dataset.index);
+  },
+
+  onImageError(e) {
+    console.error('图片加载失败:', e.detail.errMsg);
+    const index = e.currentTarget.dataset.index;
+    const newPreviewImages = [...this.data.previewImages];
+    newPreviewImages.splice(index, 1);
+    this.setData({ previewImages: newPreviewImages });
+    tt.showToast({ title: '图片加载失败', icon: 'none' });
+  }
 });
 
 // 新增：版本比较工具函数

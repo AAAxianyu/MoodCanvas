@@ -1,116 +1,107 @@
 /* 基础样式 */
 .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
+  width: 100%;
   height: 100vh;
-  background: linear-gradient(180deg, #FFF9E6 0%, #FFEEDD 100%);
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #FAF3E0;
 }
 
+.splash-image {
+  width: 100%;      /* 调整为100%宽度 */
+  height: 100%;     /* 调整为100%高度 */
+}
+
+/* 标题样式 */
 .title-container {
-  margin-top: 120rpx;
+  margin-top: 80rpx;
   width: 100%;
   text-align: center;
-  animation: fadeInDown 1s ease-out;
+  animation: fadeIn 1s ease-out;
 }
 
 .title {
-  font-size: 80rpx;
-  color: #FF9500;
-  font-family: 'Comic Sans MS', cursive;
+  font-size: 92rpx;
+  color: #F5A623;
+  font-family: 'Palatino', 'Book Antiqua', serif;
   font-weight: bold;
-  letter-spacing: 4rpx;
-  text-shadow: 4rpx 4rpx 12rpx rgba(255,149,0,0.2);
+  letter-spacing: 8rpx;
+  text-shadow: 
+    4rpx 4rpx 0 #FFF,
+    6rpx 6rpx 12rpx rgba(245,166,35,0.3);
 }
 
+/* 扩大云朵容器 */
 .cloud-container {
-  position: relative;
-  width: 100%;
-  height: 500rpx;
-  margin-bottom: 80rpx;
+  position: absolute;
+  bottom: -100rpx;  /* 向上扩展 */
+  width: 200%;     /* 向右扩展 */
+  left: -50%;      /* 向右偏移 */
+  height: 800rpx;   /* 增加高度 */
 }
 
 .cloud-shape {
   position: absolute;
   bottom: 0;
-  left: 0;
   width: 100%;
-  height: 400rpx;
-  background: linear-gradient(180deg, #FFB800 0%, #FF9500 100%);
-  clip-path: path('M0,200 Q100,0 200,200 T400,200 T600,200 T800,200 T1000,200 T1100,200 T1200,400 Z');
-  animation: cloudFloat 4s ease-in-out infinite alternate;
+  height: 100%;
+  background: #FFB800;
+  clip-path: path('M0,200 Q150,0 300,100 T600,80 T900,120 T1200,100 T1500,150 T1800,120 L1800,800 L0,800 Z');
+  border-radius: 50% 50% 0 0;
+}
+
+/* 调整笑脸位置 */
+.face {
+  position: absolute;
+  top: 50%;  /* 保持在云朵中心 */
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .eyes {
-  position: absolute;
-  top: 80rpx;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300rpx;
   display: flex;
-  justify-content: space-between;
-  animation: blink 4s infinite;
+  gap: 80rpx;
 }
 
 .eye {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 50%;
-  background: #000;
-  position: relative;
-}
-
-.pupil {
-  position: absolute;
-  width: 60rpx;
-  height: 60rpx;
+  width: 80rpx;
+  height: 80rpx;
   background: #FFF;
   border-radius: 50%;
-  top: 30rpx;
-  left: 30rpx;
-  animation: lookAround 8s infinite alternate;
+  position: relative;
+  transform: rotate(8deg);
+}
+
+.eye::after {
+  content: '';
+  position: absolute;
+  width: 40rpx;
+  height: 40rpx;
+  background: #000;
+  border-radius: 50%;
+  top: 20rpx;
+  left: 20rpx;
+  transform: translate(8rpx, -8rpx);
 }
 
 .mouth {
-  position: absolute;
-  bottom: 120rpx;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100rpx;
-  height: 60rpx;
-  border-bottom: 10rpx solid #000;
-  border-radius: 0 0 60rpx 60rpx;
-  animation: smile 3s infinite alternate;
+  width: 80rpx;  /* 缩短长度 */
+  height: 16rpx; /* 加粗高度 */
+  border-bottom: 8rpx solid #000;
+  border-radius: 0;
+  margin: 40rpx auto 0;
+  transform: rotate(0deg); /* 取消倾斜 */
+  animation: none; /* 取消动画 */
 }
 
 /* 动画定义 */
-@keyframes fadeInDown {
+@keyframes fadeIn {
   from { opacity: 0; transform: translateY(-40rpx); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes cloudFloat {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-20rpx); }
-}
-
-@keyframes blink {
-  0%, 96%, 100% { height: 120rpx; }
-  98% { height: 20rpx; }
-}
-
-@keyframes lookAround {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(15rpx, 0); }
-  50% { transform: translate(0, 15rpx); }
-  75% { transform: translate(-15rpx, 0); }
-  100% { transform: translate(0, -15rpx); }
-}
-
 @keyframes smile {
-  0% { width: 80rpx; border-radius: 0 0 40rpx 40rpx; }
-  100% { width: 120rpx; border-radius: 0 0 80rpx 80rpx; }
+  0% { width: 110rpx; opacity: 0.9; }
+  100% { width: 130rpx; opacity: 1; }
 }

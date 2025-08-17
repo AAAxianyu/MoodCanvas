@@ -1,20 +1,8 @@
 <view class="container">
-  <view class="title-container">
-    <text class="title">MoodGandas</text>
-  </view>
-  
-  <view class="cloud-container">
-    <view class="cloud-shape"></view>
-    
-    <view class="eyes">
-      <view class="eye left-eye">
-        <view class="pupil"></view>
-      </view>
-      <view class="eye right-eye">
-        <view class="pupil"></view>
-      </view>
-    </view>
-    
-    <view class="mouth"></view>
-  </view>
+  <image 
+    class="splash-image" 
+    src="/src/assets/logos/md.png"
+    mode="scaleToFill"
+    binderror="onImageError"
+  ></image>
 </view>

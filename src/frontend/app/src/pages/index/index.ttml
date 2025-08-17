@@ -1,11 +1,26 @@
 <view class="chat-page">
 
   <!-- 顶部导航 -->
-  <view class="nav">
-    <image class="nav-left-icon" src="/src/assets/icons/List.png"></image>
-    <text class="nav-title">MoodCanvas</text>
-    <image class="nav-right-icon" src="/src/assets/icons/Eyes.png"></image>
+<view class="nav">
+  <image class="nav-left-icon" src="/src/assets/icons/List.png" bindtap="toggleSidebar"></image>
+  <text class="nav-title">MoodCanvas</text>
+  <image class="nav-right-icon" src="/src/assets/icons/Eyes.png"></image>
+</view>
+
+<!-- 侧边栏遮罩 -->
+<view class="sidebar-mask" tt:if="{{showSidebar}}" bindtap="toggleSidebar"></view>
+
+<!-- 侧边栏内容 -->
+<view class="sidebar {{showSidebar ? 'show' : ''}}">
+  <view class="sidebar-header">
+    <image class="avatar" src="/src/assets/logos/md.png"></image>
+    <text class="username">用户名</text>
   </view>
+  <view class="menu-list">
+    <view class="menu-item" bindtap="navigateTo" data-url="/pages/settings/index">设置</view>
+    <view class="menu-item" bindtap="navigateTo" data-url="/pages/feedback/index">帮助与反馈</view>
+  </view>
+</view>
 
   <scroll-view
     class="msgs"
@@ -38,13 +53,12 @@
     </view>
 
     <input
-      class="input"
-      placeholder="写下你的感受或上传图片..."
-      placeholder-class="placeholder"
-      value="{{inputValue}}"          
+      type="text"
       bindinput="handleInput"
-      confirm-type="send"
       bindconfirm="handleSend"
+      bindkeyboardheightchange="onKeyboardHeightChange"
+      value="{{inputValue}}"
+      placeholder="输入你的情绪..."
     />
     <!-- 悬浮图标 -->
     <view class="floating-icons">
