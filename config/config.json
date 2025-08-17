@@ -67,7 +67,7 @@
       "defaults": {
         "guidance_scale": 5.5,
         "size": "adaptive",
-        "watermark": true
+        "watermark": false
       }
     },
     "t2i": {
@@ -82,7 +82,7 @@
         "guidance_scale": 7.5,
         "size": "1024x1024",
         "num_images": 1,
-        "watermark": true
+        "watermark": false
       }
     }
   },
