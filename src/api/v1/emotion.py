@@ -34,10 +34,9 @@ async def analyze_multi(
         if image_file:
             temp_dir = Path(config_manager.config["paths"].get("temp_dir", "data/temp"))
             image_path = save_upload_file(image_file, temp_dir, "emotion_analysis")
-            image_result = image_analyzer.analyze_image_path(str(image_path))
+            image_result = image_analyzer.analyze_image_path(str(image_path)) #在这里调用了豆包图片分析模型
             result["image_content"] = image_result.get("analysis", {})
-            # 清理临时文件
-            image_path.unlink()
+            
         # 语音处理
         if audio_file:
             temp_dir = Path(config_manager.config["paths"].get("temp_dir", "data/temp"))
@@ -62,12 +61,25 @@ async def analyze_multi(
         gen_text = None
         gen_image_url = None
         # 优先用文字，否则用语音转文字，否则用图片caption
-        input_text = text or (result.get("audio", {}).get("transcribed_text")) or (result.get("image_content", {}).get("caption")) or ""
-        # 生成文案和图片（调用已有生成内容方法）
+        # input_text = text or (result.get("audio", {}).get("transcribed_text")) or (result.get("image_content", {}).get("caption")) or ""
+        image_content = result.get('image_content', {})
+        
+        input_text = (
+            f"图片内容描述：{image_content}。\n"
+            f"用户当前情绪抒发（语音转文字）：{result.get('audio', {}).get('transcribed_text', '')}。\n"
+            f"用户内心想法或创意（文字输入）：{text or ''}"
+        )
+        # # 生成文案和图片（调用已有生成内容方法）
         if input_text:
-            gen_content = await analyzer._generate_content(input_text, emotion_tags)
+            gen_content = await analyzer.generate_content(input_text, emotion_tags, image_content, image_path)
             gen_text = gen_content.get("text")
             gen_image_url = gen_content.get("image_url")
+
+
+        # 清理临时文件
+        image_path.unlink()
+
+
         # 返回结构
         return JSONResponse(content={
             "image_content": result.get("image_content"),

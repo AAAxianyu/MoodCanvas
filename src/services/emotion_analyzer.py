@@ -7,7 +7,6 @@ import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple, Union
 from PIL import Image
-from clip_interrogator import Config as CIConfig, Interrogator
 import io
 
 import logging
@@ -402,9 +401,6 @@ class MultiModelEmotionAnalyzer:
             # 融合情感标签
             merged_emotion = self._fuse_emotions(audio_emotion_tags, text_emotion_tags, "weighted")
             
-            # 生成文案和图片
-            generated_content = await self._generate_content(transcribed_text, merged_emotion)
-            
             processing_time = time.time() - start_time
             
             return {
@@ -415,7 +411,6 @@ class MultiModelEmotionAnalyzer:
                     'merged_emotion': merged_emotion,
                     'fusion_strategy': 'weighted'
                 },
-                'generated_content': generated_content,
                 'processing_time': round(processing_time, 3),
                 'status': 'success'
             }
@@ -435,8 +430,6 @@ class MultiModelEmotionAnalyzer:
             text_emotion_result = self.text_emotion_model.analyze(text)
             text_emotion_tags = self._extract_text_emotion_tags(text_emotion_result)
             
-            # 生成文案和图片
-            generated_content = await self._generate_content(text, text_emotion_tags)
             
             processing_time = time.time() - start_time
             
@@ -446,7 +439,6 @@ class MultiModelEmotionAnalyzer:
                     'text_emotion': text_emotion_tags,
                     'confidence': self._extract_confidence(text_emotion_result)
                 },
-                'generated_content': generated_content,
                 'processing_time': round(processing_time, 3),
                 'status': 'success'
             }
@@ -457,24 +449,19 @@ class MultiModelEmotionAnalyzer:
 
 
 
-    async def _generate_content(self, text: str, emotion_tags: List[str], image_content: dict = None, image_path: Optional[str] = None) -> Dict[str, Any]:
+    async def generate_content(self, text: str, emotion_tags: List[str], image_content: dict = None, image_path: Optional[str] = None) -> Dict[str, Any]:
         """
-        统一生成逻辑：输入图/文/音至少一种，情感分析后合并，统一传给第三方API生成图和文，最终只返回第三方API生成的图和文。
-        图片编辑提示词：如有原图，需在原图基础上通过夸张、比喻等方式增强冲击力。
+        统一生成逻辑：输入图/文/音至少一种，情感分析后合并，统一传给第三方API生成文，最终只返回第三方API生成的文。
         """
         try:
+            
             # 构建第三方API输入
             image_desc = image_content.get("caption") if image_content else ""
-            prompt_data = {
-                "image_content": image_desc,
-                "emotion_tags": emotion_tags,
-                "text": text,
-                "image_path": image_path
-            }
+            
             # 构造图片编辑/生成提示词
             if image_path:
                 # 有原图，编辑提示词更夸张/比喻
-                image_prompt = f"请在原图基础上进行编辑，突出以下内容：{image_desc}，结合情感标签：{', '.join(emotion_tags)}，并通过夸张、比喻等方式增强视觉冲击力，生成一张PLOG图片"
+                image_prompt = f"你是一个小红书日常生活plogger，请在原图基础上进行编辑，要求保持原图以下内容不变：{image_desc}，结合情感标签：{', '.join(emotion_tags)}，并通过夸张、比喻等方式增强视觉冲击力，生成一张PLOG图片"
             else:
                 # 无原图，直接生成
                 image_prompt = f"根据描述'{image_desc}'和情感标签'{', '.join(emotion_tags)}'生成一张富有冲击力的PLOG图片。"
@@ -505,10 +492,9 @@ class MultiModelEmotionAnalyzer:
                 try:
                     if image_path:
                         # 编辑原图
-                        image_result = self.image_generator.edit_image(
+                        image_result = self.image_editor.edit_image(
                             input_path_or_url=image_path,
                             prompt=image_prompt,
-                            negative_prompt="",
                             guidance_scale=7.5,
                             save_local=True
                         )
