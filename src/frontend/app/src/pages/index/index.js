@@ -23,11 +23,30 @@ Page({
     previewImages: [], // 新增：用于预览的图片列表
     audioTempPath: null, // 新增：存储录音临时路径
     isRecording: false, // 新增：录音状态标志
-    recordingTime: 0 // 新增：录音时长
+    recordingTime: 0, // 新增：录音时长
+    showHeaderImage: true, // 控制图片显示
+    showSidebar: false, // 新增：控制侧边栏显隐
   },
 
   // 防止连点
   _sendingLock: false,
+
+  onLoad() {
+    // 3秒后自动隐藏图片
+    setTimeout(() => {
+      this.setData({ showHeaderImage: false });
+    }, 3000);
+  },
+
+  toggleSidebar() {
+    this.setData({ showSidebar: !this.data.showSidebar });
+  },
+
+  navigateTo(e) {
+    const url = e.currentTarget.dataset.url;
+    tt.navigateTo({ url });
+    this.setData({ showSidebar: false });
+  },
 
   // —— 输入 —— //
   handleInput(e) {

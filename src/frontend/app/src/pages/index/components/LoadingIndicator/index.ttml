@@ -1,4 +1,9 @@
 <view class="loading-indicator {{isHiding ? 'hide' : ''}}" tt:if="{{show || isHiding}}">
+  <view class="emoji-container">
+    <image class="emoji" src="/src/assets/icons/Camera.png"></image>
+    <image class="emoji" src="/src/assets/icons/Eyes.png"></image>
+    <image class="emoji" src="/src/assets/icons/Microphone.png"></image>
+  </view>
   <view class="progress-bar">
     <view class="progress" style="width: {{progress}}%"></view>
   </view>
