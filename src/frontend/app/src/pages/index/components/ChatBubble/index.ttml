@@ -1,0 +1,6 @@
+<view class="row {{role === 'user' ? 'right' : 'left'}}">
+  <view class="bubble {{role}}">
+    <text tt:if="{{type === 'text'}}" selectable="true">{{content}}</text>
+    <image tt:if="{{type === 'image'}}" src="{{src}}" mode="widthFix" bindtap="onTapImage" />
+  </view>
+</view>

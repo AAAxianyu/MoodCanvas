@@ -1,0 +1,28 @@
+<view class="modal-container">
+  <view class="modal-content">
+    <image class="preview-image" src="{{imageUrl}}" mode="aspectFill"></image>
+    
+    <view class="feedback-bar">
+      <view class="progress-line">
+        <view class="progress-indicator" style="left: {{progressPercent}}%"></view>
+      </view>
+      
+      <view class="emoji-icons">
+        <view 
+          class="emoji-item {{currentEmojiIndex === index ? 'active' : ''}}" 
+          tt:for="{{emojis}}" 
+          tt:key="index" 
+          bindtap="selectEmoji"
+          data-index="{{index}}"
+        >
+          <image class="emoji-icon" src="{{item.icon}}" mode="aspectFit"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="bottom-buttons">
+    <button class="close-btn" bindtap="closePreview">✕</button>
+    <button class="confirm-btn" bindtap="confirmSelection">→</button>
+  </view>
+</view>

@@ -1,0 +1,11 @@
+<view class="image-sender">
+  <view class="grid">
+    <block tt:for="{{files}}" tt:key="id">
+      <view class="thumb">
+        <image class="img" src="{{item.path}}" mode="aspectFill"
+               data-path="{{item.path}}" bindtap="onPreview" />
+        <view class="rm" data-id="{{item.id}}" bindtap="onRemove">×</view>
+      </view>
+    </block>
+  </view>
+</view>

@@ -1,0 +1,58 @@
+<view class="chat-page">
+
+  <!-- 顶部导航 -->
+  <view class="nav">
+    <image class="nav-left-icon" src="/src/assets/icons/List.png"></image>
+    <text class="nav-title">MoodCanvas</text>
+    <image class="nav-right-icon" src="/src/assets/icons/Eyes.png"></image>
+  </view>
+
+  <scroll-view
+    class="msgs"
+    scroll-y="true"
+    scroll-into-view="{{toView}}"
+    scroll-with-animation="true"
+  >
+    <block tt:for="{{messages}}" tt:key="mid">
+      <chat-bubble
+        role="{{item.role}}"
+        type="{{item.type}}"
+        content="{{item.content}}"
+        src="{{item.src}}"
+        bind:preview="onPreviewImage"
+      />
+    </block>
+    <view id="bottom"></view>
+  </scroll-view>
+
+  <!-- 底部输入区 -->
+  <view class="composer">
+    <input
+      class="input"
+      placeholder="写下你的感受吧…"
+      placeholder-class="placeholder"
+      value="{{inputValue}}"          
+      bindinput="handleInput"
+      confirm-type="send"
+      bindconfirm="handleSend"
+    />
+    <!-- 悬浮图标 -->
+    <view class="floating-icons">
+      <image class="tool-icon" src="/src/assets/icons/Microphone.png" bindtap="onRecord"></image>
+      <image class="tool-icon" src="/src/assets/icons/Camera.png" bindtap="onCamera"></image>
+      <button class="send-btn" bindtap="handleSend">
+        <image class="send-icon" src="/src/assets/icons/send.png"></image>
+      </button>
+    </view>
+  </view>
+
+  <!-- ImageSender 组件 -->
+  <image-sender
+    id="imageSender"
+    tt:if="{{showImageSender}}"
+    max="6"
+    preset="{{presetImages}}"
+    bind:send="onSendImages"
+  />
+  
+</view>

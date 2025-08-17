@@ -1,0 +1,17 @@
+<view class="container">
+  <view class="logo-container">
+    <image class="logo" src="../../assets/logos/MoodCanvas.png" mode="widthFix" binderror="onLogoError"/>
+  </view>
+  
+  <view class="cloud-container">
+    <image class="cloud-image" src="https://picsum.photos/400/300" mode="aspectFit"></image>
+  </view>
+
+  <view class="vector-container">
+    <image class="vector-image" src="../../assets/logos/Vector%20258.png" mode="widthFix" binderror="onVectorError"/>
+  </view>
+
+  <view class="group16-container">
+    <image class="group16-image" src="../../assets/logos/Group%2016.png" mode="widthFix" binderror="onGroup16Error"/>
+  </view>
+</view>

@@ -1,0 +1,7 @@
+{
+    "usingComponents": {
+        "chat-bubble": "/src/pages/index/components/ChatBubble/index",
+        "image-sender": "/src/pages/index/components/ImageSender/index"
+    },
+    "navigationStyle": "custom"
+}
