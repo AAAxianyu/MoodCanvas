@@ -1,65 +1,116 @@
+/* 基础样式 */
 .container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background-color: #FFF9E6;
   align-items: center;
+  justify-content: space-between;
+  height: 100vh;
+  background: linear-gradient(180deg, #FFF9E6 0%, #FFEEDD 100%);
   position: relative;
+  overflow: hidden;
 }
 
-.logo-container {
-  position: absolute;
-  left: 84px;
-  top: 87px;
-  width: 235px;
-  height: 92px;
-}
-
-.logo {
+.title-container {
+  margin-top: 120rpx;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
+  text-align: center;
+  animation: fadeInDown 1s ease-out;
+}
+
+.title {
+  font-size: 80rpx;
+  color: #FF9500;
+  font-family: 'Comic Sans MS', cursive;
+  font-weight: bold;
+  letter-spacing: 4rpx;
+  text-shadow: 4rpx 4rpx 12rpx rgba(255,149,0,0.2);
 }
 
 .cloud-container {
   position: relative;
-  bottom: 0;
   width: 100%;
-  height: 600rpx;
+  height: 500rpx;
+  margin-bottom: 80rpx;
 }
 
-.cloud-image {
+.cloud-shape {
   position: absolute;
-  bottom: -200rpx;
+  bottom: 0;
   left: 0;
   width: 100%;
-  height: auto;
+  height: 400rpx;
+  background: linear-gradient(180deg, #FFB800 0%, #FF9500 100%);
+  clip-path: path('M0,200 Q100,0 200,200 T400,200 T600,200 T800,200 T1000,200 T1100,200 T1200,400 Z');
+  animation: cloudFloat 4s ease-in-out infinite alternate;
 }
 
-.vector-container {
+.eyes {
   position: absolute;
-  left: -89.96px;
-  top: 467.31px;
-  width: 537.2px;
-  height: 498.3px;
+  top: 80rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300rpx;
+  display: flex;
+  justify-content: space-between;
+  animation: blink 4s infinite;
 }
 
-.vector-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.eye {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: #000;
+  position: relative;
 }
 
-.group16-container {
+.pupil {
   position: absolute;
-  left: 81px;
-  top: 704px;
-  width: 256.09px;
-  height: 109.49px;
+  width: 60rpx;
+  height: 60rpx;
+  background: #FFF;
+  border-radius: 50%;
+  top: 30rpx;
+  left: 30rpx;
+  animation: lookAround 8s infinite alternate;
 }
 
-.group16-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.mouth {
+  position: absolute;
+  bottom: 120rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100rpx;
+  height: 60rpx;
+  border-bottom: 10rpx solid #000;
+  border-radius: 0 0 60rpx 60rpx;
+  animation: smile 3s infinite alternate;
+}
+
+/* 动画定义 */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-40rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cloudFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-20rpx); }
+}
+
+@keyframes blink {
+  0%, 96%, 100% { height: 120rpx; }
+  98% { height: 20rpx; }
+}
+
+@keyframes lookAround {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(15rpx, 0); }
+  50% { transform: translate(0, 15rpx); }
+  75% { transform: translate(-15rpx, 0); }
+  100% { transform: translate(0, -15rpx); }
+}
+
+@keyframes smile {
+  0% { width: 80rpx; border-radius: 0 0 40rpx 40rpx; }
+  100% { width: 120rpx; border-radius: 0 0 80rpx 80rpx; }
 }

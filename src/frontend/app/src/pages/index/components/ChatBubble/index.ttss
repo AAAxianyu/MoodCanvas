@@ -5,3 +5,15 @@
 .bubble { max-width:70%; padding: 18rpx 22rpx; border-radius:18rpx; word-wrap:break-word; }
 .bubble.user { background:#FFD970; color:#333; } /* 用户消息气泡 */
 .bubble.ai { background:#F5F6FA; color:#222; } /* AI 消息气泡 */
+.audio-message {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 20rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+}
+.audio-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 10rpx;
+}

@@ -1,0 +1,6 @@
+<view class="loading-indicator {{isHiding ? 'hide' : ''}}" tt:if="{{show || isHiding}}">
+  <view class="progress-bar">
+    <view class="progress" style="width: {{progress}}%"></view>
+  </view>
+  <text class="text">{{text}}</text>
+</view>

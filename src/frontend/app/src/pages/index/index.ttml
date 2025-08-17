@@ -27,9 +27,19 @@
 
   <!-- 底部输入区 -->
   <view class="composer">
+    <!-- 图片预览区 -->
+    <view class="preview-area" tt:if="{{previewImages.length}}">
+      <block tt:for="{{previewImages}}" tt:key="*this">
+        <view class="preview-item">
+          <image src="{{item}}" mode="aspectFill" />
+          <view class="remove-btn" bindtap="removePreviewImage" data-index="{{index}}">×</view>
+        </view>
+      </block>
+    </view>
+
     <input
       class="input"
-      placeholder="写下你的感受吧…"
+      placeholder="写下你的感受或上传图片..."
       placeholder-class="placeholder"
       value="{{inputValue}}"          
       bindinput="handleInput"
@@ -46,6 +56,22 @@
     </view>
   </view>
 
+  <!-- 录音遮罩层 -->
+  <view class="recording-mask" tt:if="{{isRecording}}">
+    <view class="recording-panel">
+      <view class="recording-status">
+        <text class="recording-text">录音中</text>
+        <text class="recording-time">{{recordingTime}}秒</text>
+      </view>
+      <view class="recording-wave">
+        <block tt:for="{{[1,2,3,4,5]}}" tt:key="*this">
+          <view class="wave-bar" style="height: {{20 + Math.random() * 30}}rpx"></view>
+        </block>
+      </view>
+      <button class="stop-btn" bindtap="stopRecording">停止</button>
+    </view>
+  </view>
+
   <!-- ImageSender 组件 -->
   <image-sender
     id="imageSender"
@@ -53,6 +79,12 @@
     max="6"
     preset="{{presetImages}}"
     bind:send="onSendImages"
+  />
+  
+  <loading-indicator 
+    text="{{loadingText}}" 
+    show="{{showLoading}}" 
+    progress="{{loadingProgress}}"
   />
   
 </view>

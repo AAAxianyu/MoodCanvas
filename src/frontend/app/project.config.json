@@ -1,14 +1,1 @@
-{
-    "setting": {
-        "urlCheck": true,
-        "es6": true,
-        "postcss": true,
-        "minified": true,
-        "newFeature": true,
-        "autoCompile": true,
-        "compileHotReLoad": true,
-        "nativeCompile": true
-    },
-    "appid": "testAppId",
-    "projectname": "app"
-}
+{"setting":{"urlCheck":true,"es6":true,"postcss":true,"minified":true,"newFeature":true,"autoCompile":true,"compileHotReLoad":true,"nativeCompile":true},"appid":"testAppId","projectname":"app"}

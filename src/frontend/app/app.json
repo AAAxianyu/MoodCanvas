@@ -1,12 +1,12 @@
 {
   "pages": [
-    "src/pages/index/index",
-    "src/pages/preview/preview"
+    "src/pages/splash/splash",
+    "src/pages/index/index"
   ],
   "window": {
-    "navigationStyle": "custom",
+    "navigationBarTitleText": "MoodCanvas",
+    "navigationBarBackgroundColor": "#FFF9E6",
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "",
-    "navigationBarBackgroundColor": "#FFFFFF"
+    "backgroundColor": "#FFF9E6"
   }
 }

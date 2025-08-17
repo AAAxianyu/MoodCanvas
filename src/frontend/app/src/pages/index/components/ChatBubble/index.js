@@ -8,7 +8,8 @@ Component({
     role: { type: String, value: 'ai' },
     type: { type: String, value: 'text' },
     content: { type: String, value: '' },
-    src: { type: String, value: '' } // 将 imageUrl 改为 src
+    src: { type: String, value: '' },
+    audioSrc: { type: String, value: '' } // 新增：支持语音消息
   },
   methods: {
     onTapImage() {

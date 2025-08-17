@@ -2,5 +2,9 @@
   <view class="bubble {{role}}">
     <text tt:if="{{type === 'text'}}" selectable="true">{{content}}</text>
     <image tt:if="{{type === 'image'}}" src="{{src}}" mode="widthFix" bindtap="onTapImage" />
+    <view tt:if="{{type === 'audio'}}" class="audio-message" bindtap="playAudio">
+      <image src="/src/assets/icons/audio.png" class="audio-icon" />
+      <text>语音消息</text>
+    </view>
   </view>
 </view>
