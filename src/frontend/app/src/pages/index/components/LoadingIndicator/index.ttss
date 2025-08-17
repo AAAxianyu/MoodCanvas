@@ -15,6 +15,18 @@
   transition: all 0.5s ease;
 }
 
+.loading-image {
+  width: 100%;
+  margin-top: 40rpx;
+  opacity: 0.8;
+  display: block;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .emoji-container {
   display: flex;
   justify-content: space-between;

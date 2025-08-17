@@ -8,4 +8,6 @@
     <view class="progress" style="width: {{progress}}%"></view>
   </view>
   <text class="text">{{text}}</text>
+  <!-- 修改：绑定 showImage 状态 -->
+  <image class="loading-image" src="/src/assets/logos/loading.png" tt:if="{{showImage}}" mode="widthFix"></image>
 </view>
