@@ -1,7 +1,7 @@
 {
   "pages": [
-    "src/pages/splash/splash",
-    "src/pages/index/index"
+    "src/pages/index/index",
+    "src/pages/preview/preview"
   ],
   "window": {
     "navigationStyle": "custom",

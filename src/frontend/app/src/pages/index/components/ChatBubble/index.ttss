@@ -1,0 +1,7 @@
+.row { display:flex; align-items:flex-end; margin: 16rpx 20rpx; }
+.right { justify-content:flex-end; }
+.left { justify-content:flex-start; }
+.avatar { width: 64rpx; height:64rpx; border-radius:50%; margin: 0 12rpx; }
+.bubble { max-width:70%; padding: 18rpx 22rpx; border-radius:18rpx; word-wrap:break-word; }
+.bubble.user { background:#FFD970; color:#333; } /* 用户消息气泡 */
+.bubble.ai { background:#F5F6FA; color:#222; } /* AI 消息气泡 */
