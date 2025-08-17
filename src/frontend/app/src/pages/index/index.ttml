@@ -53,13 +53,12 @@
     </view>
 
     <input
-      class="input"
-      placeholder="写下你的感受或上传图片..."
-      placeholder-class="placeholder"
-      value="{{inputValue}}"          
+      type="text"
       bindinput="handleInput"
-      confirm-type="send"
       bindconfirm="handleSend"
+      bindkeyboardheightchange="onKeyboardHeightChange"
+      value="{{inputValue}}"
+      placeholder="输入你的情绪..."
     />
     <!-- 悬浮图标 -->
     <view class="floating-icons">

@@ -1,10 +1,15 @@
 <view class="row {{role === 'user' ? 'right' : 'left'}}">
   <view class="bubble {{role}}">
     <text tt:if="{{type === 'text'}}" selectable="true">{{content}}</text>
-    <image tt:if="{{type === 'image'}}" src="{{src}}" mode="widthFix" bindtap="onTapImage" />
+    <image tt:if="{{type === 'image'}}" src="{{src}}" mode="aspectFill" bindtap="onTapImage" />
     <view tt:if="{{type === 'audio'}}" class="audio-message" bindtap="playAudio">
       <image src="/src/assets/icons/audio.png" class="audio-icon" />
       <text>语音消息</text>
+    </view>
+    <!-- 新增：复合消息展示 -->
+    <view tt:if="{{type === 'composite'}}" class="composite-message">
+      <text class="composite-text">{{content}}</text>
+      <image src="{{src}}" mode="widthFix" class="composite-image" />
     </view>
   </view>
 </view>
