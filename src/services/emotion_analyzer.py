@@ -29,6 +29,7 @@ from src.services.text_generator import TextGenerator
 from src.utils.image_utils import validate_image_file
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class MultiModelEmotionAnalyzer:
     """三阶段多模型情感分析系统"""
@@ -461,10 +462,9 @@ class MultiModelEmotionAnalyzer:
             # 构造图片编辑/生成提示词
             if image_path:
                 # 有原图，编辑提示词更夸张/比喻
-                image_prompt = f"你是一个小红书日常生活plogger，请在原图基础上进行编辑，要求保持原图以下内容不变：{image_desc}，结合情感标签：{', '.join(emotion_tags)}，并通过夸张、比喻等方式增强视觉冲击力，生成一张PLOG图片"
-            else:
-                # 无原图，直接生成
-                image_prompt = f"根据描述'{image_desc}'和情感标签'{', '.join(emotion_tags)}'生成一张富有冲击力的PLOG图片。"
+                image_prompt = f"你是一位专业的PLOG图片编辑师，小红书高赞博主，当前用户拍摄者情绪为 {emotion_tags},{image_content.get('edit_prompt', {})}\n"
+            else:  # 无原图，直接生成
+                image_prompt = f"你是一位专业的PLOG图片编辑师，小红书高赞博主,根据用户思路{text}和情感标签'{', '.join(emotion_tags)}'生成一张富有冲击力的PLOG图片。"
 
             # 文案生成提示词
             text_prompt = f"请根据图片内容'{image_desc}'、情感标签'{', '.join(emotion_tags)}'和原始文字'{text}'，生成一段富有感染力的文案，可适当使用夸张、比喻等修辞,用于PLOG内容"
@@ -492,6 +492,7 @@ class MultiModelEmotionAnalyzer:
                 try:
                     if image_path:
                         # 编辑原图
+                        image_prompt = image_prompt + f",并在图片上合适位置加入文案'{generated_text.split('\n')[0]}'"
                         image_result = self.image_editor.edit_image(
                             input_path_or_url=image_path,
                             prompt=image_prompt,
@@ -614,19 +615,20 @@ class DoubaoVLMClient:
         b64 = base64.b64encode(image_bytes).decode("utf-8")
 
         system_prompt = (
-            "你是资深视觉设计师和修图指导，擅长从图片中提取关键信息并生成适合图像编辑模型的指令。\n"
+            "你是资深视觉设计师和修图指导，同时也是小红书网红plogger，擅长从图片中提取关键信息并生成适合图像编辑模型的指令。\n"
             "严格以 JSON 返回，键包括：caption, objects, styles, colors, suggestions, edit_prompt, negative_prompt。"
         )
         user_instruction = (
-            f"请分析这张图片，任务意图：{intent}；"
+            f"请分析这张小红书plog图片，任务意图：{intent}；"
             f"风格预设（可选）：{style_preset or '无'}。"
             "要求：\n"
-            "1) caption：一句话描述图片主体与场景；\n"
+            "1) caption：详细的描述图片各个部分内容以及定位，包括主体、背景、元素等；\n"
             "2) objects：最多5个关键对象及其属性（名称/颜色/材质/可见特征）；\n"
             "3) styles：提取3~6个风格标签（如 cinematic、neon、portrait 等）；\n"
             "4) colors：2~5个主色；\n"
-            "5) suggestions：3条可执行的编辑建议（面向 i2i 模型）；\n"
-            "6) edit_prompt：综合以上信息，生成可直接用于图像编辑模型的英文指令（描述清晰、避免主观词、包含光照/质感/层次等）；\n"
+            "5) suggestions：1条可执行的编辑建议（面向 i2i 模型），要求非常详细，全部包括caption内的所有元素保留/修改/添加/删除，尽量保存objects中所说的主体对象；\n"
+            "6) edit_prompt：综合以上信息，生成可直接用于图像编辑模型的英文指令（描述清晰、避免主观词、包含光照/质感/层次等）；\n" \
+            "  模板样例如下:帮我生成一张奶油白色ins风格的plog图片，保持图中的饮料及瓶身文字不变，背景在家中的一角，装修风格以及简奶油风为主，饮料放在圆形白色桌面上，桌面上还有打开的笔记本电脑，电脑键盘上放着银灰色头戴式耳.机，桌上一本打开的时尚杂志，旁边一本书上错落着放两支笔，还有浅米色的波西米亚镂空桌布，阳光从右边百叶窗照进来，光线明亮均匀，阴影干净通透，整体画面干净不杂乱，高.级精致有生活感，原比例。\n" 
             "7) negative_prompt：常见伪影/不期望效果。\n"
             "只输出 JSON，不要额外解释。"
         )
@@ -669,6 +671,7 @@ class DoubaoVLMClient:
             result.setdefault("suggestions", [])
             result.setdefault("edit_prompt", result.get("caption", ""))
             result.setdefault("negative_prompt", "low-res, blurry, artifacts, oversaturated, watermark")
+            logger.info("DoubaoVLMClient.analyze_image 成功: %s", result)
             return result
         except Exception as e:
             logger.error(f"DoubaoVLMClient.analyze_image 失败: {e}", exc_info=True)
@@ -715,7 +718,7 @@ class ImageEmotionAnalyzerService:
     def analyze_image_bytes(
         self,
         image_bytes: bytes,
-        intent: str = "enhance",
+        intent: str = "情感分析，表现力更强，同时真实生动",
         style_preset: Optional[str] = None,
         auto_edit: bool = False
     ) -> Dict[str, Any]:
@@ -762,7 +765,7 @@ class ImageEmotionAnalyzerService:
     def analyze_image_path(
         self,
         image_path: str,
-        intent: str = "enhance",
+        intent: str = "情感分析，表现力更强，同时真实生动",
         style_preset: Optional[str] = None,
         auto_edit: bool = False
     ) -> Dict[str, Any]:

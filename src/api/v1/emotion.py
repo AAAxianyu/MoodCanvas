@@ -34,7 +34,7 @@ async def analyze_multi(
         if image_file:
             temp_dir = Path(config_manager.config["paths"].get("temp_dir", "data/temp"))
             image_path = save_upload_file(image_file, temp_dir, "emotion_analysis")
-            image_result = image_analyzer.analyze_image_path(str(image_path)) #在这里调用了豆包图片分析模型
+            image_result = image_analyzer.analyze_image_path(str(image_path), intent = "情感分析，表现力更强，同时真实生动", style_preset = "小红书plog风格") #在这里调用了豆包图片分析模型
             result["image_content"] = image_result.get("analysis", {})
             
         # 语音处理
@@ -65,7 +65,13 @@ async def analyze_multi(
         image_content = result.get('image_content', {})
         
         input_text = (
-            f"图片内容描述：{image_content}。\n"
+            f"图片内容描述：{image_content.get('caption', {})}。\n"
+            f"图片关键对象及其属性: {image_content.get('objects', {})}。\n"
+            f"图片风格标签： {image_content.get('styles', {})}。\n"
+            f"图片主要色调: {image_content.get('colors', {})}。\n"
+            f"图片修改该建议：{image_content.get('suggestions', {})}。\n"
+            f"图片编辑提示词：{image_content.get('edit_prompt', {})}。\n"
+            f"图片负面提示词：{image_content.get('negative_prompt', {})}。\n"
             f"用户当前情绪抒发（语音转文字）：{result.get('audio', {}).get('transcribed_text', '')}。\n"
             f"用户内心想法或创意（文字输入）：{text or ''}"
         )
